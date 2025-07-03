@@ -5,6 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>St. Rueben Comprehensive School</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        /* existing CSS omitted for brevity */
+        .logout-btn {
+            background: <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>St. Rueben Comprehensive School</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
             --primary-blue: #2A5C82;
@@ -521,7 +532,7 @@
             }
         }
     </style>
-    <link rel="stylesheet" href="{{url_for('static'. filename='css/style.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
     <div class="search-bar-container">
@@ -555,6 +566,10 @@
         </div>
         <i class="fas fa-bars mobile-menu"></i>
     </nav>
+    <a href="{{ url_for('login') }}" style="padding: 10px; background: #28a745; color: white; border-radius: 4px; text-decoration: none;">Login</a>
+   <a href="{{ url_for('route_bp.add_student') }}">Add New Student</a>
+
+
     <!-- Hero Section -->
     <section class="hero">
         <div class="hero-text">
@@ -808,6 +823,64 @@
             e.target.reset();
         });
     </script>
+    <!-- Move Javascript to separate files -->
+    <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+</body>
+</html>
+#dc3545;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-left: 1rem;
+        }
+        .logout-btn:hover {
+            background: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <div class="search-bar-container">
+        <form action="/search" method="get">
+            <input type="text" name="q" placeholder="Search...">
+            <button type="submit">
+                <i class="fas fa-search"></i>
+            </button>
+        </form>
+    </div>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <img src="UploadLogo.jpeg" alt="School Logo" width="120">
+        <div class="nav-links">
+            <div class="dropdown">
+                <a href="/academics">Academics</a>
+                <div class="dropdown-content">
+                    <a href="/curriculum">Curriculum</a>
+                    <a href="/faculty">Faculty</a>
+                </div>
+            </div>
+            <a href="/admissions">Admissions</a>
+            <div class="dropdown">
+                <a href="#">Contact</a>
+                <div class="dropdown-content">
+                    <a href="https://wa.me/254714277050" target="_blank">WhatsApp Us</a>
+                    <a href="mailto:info@strueben.ac.ke">Email Us</a>
+                </div>
+            </div>
+            <a href="#downloads">Downloads</a>
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('route_bp.add_student') }}">Add New Student</a>
+                <a href="{{ url_for('route_bp.logout') }}" class="logout-btn">Logout</a>
+            {% else %}
+                <a href="{{ url_for('route_bp.login') }}" style="padding: 10px; background: #28a745; color: white; border-radius: 4px; text-decoration: none;">Login</a>
+            {% endif %}
+        </div>
+        <i class="fas fa-bars mobile-menu"></i>
+    </nav>
+
+    <!-- The rest of your body content remains unchanged -->
+
     <!-- Move Javascript to separate files -->
     <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
 </body>
