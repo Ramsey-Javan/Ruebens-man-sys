@@ -1,30 +1,67 @@
-
+import os
+import base64
 import requests
-import os 
+import datetime
+from dotenv import load_dotenv
+
+# Load environment variables from .env
+load_dotenv()
+
+def get_access_token():
+    """Fetches access token from Safaricom Daraja API."""
+    consumer_key = os.getenv('MPESA_CONSUMER_KEY')
+    consumer_secret = os.getenv('MPESA_CONSUMER_SECRET')
+
+    if not consumer_key or not consumer_secret:
+        raise Exception("Missing MPESA_CONSUMER_KEY or MPESA_CONSUMER_SECRET")
+
+    credentials = f"{consumer_key}:{consumer_secret}"
+    encoded_credentials = base64.b64encode(credentials.encode()).decode()
+
+    url = "https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials"
+    headers = {
+        "Authorization": f"Basic {encoded_credentials}"
+    }
+
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        return response.json().get("access_token")
+    else:
+        raise Exception(f"Failed to obtain access token: {response.text}")
+
 
 def process_mpesa_payment(phone, amount, account_ref):
-    """Process M-Pesa payment using Safaricom API"""
-    api_key = os.getenv('MPESA_API_KEY', 'test_api_key')
-    # Sandbox URL - replace with production in real deployment 
-    url = "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest"
+    """Initiates STK Push request to Safaricom Daraja API."""
+    access_token = get_access_token()
 
+    business_short_code = "174379"
+    passkey = os.getenv('MPESA_PASSKEY')
+
+    if not passkey:
+        raise Exception("Missing MPESA_PASSKEY")
+
+    timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+    data_to_encode = business_short_code + passkey + timestamp
+    password = base64.b64encode(data_to_encode.encode()).decode()
+
+    url = "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest"
     headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Countent_Type": "application/json"
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json"
     }
-    
+
     payload = {
-        "BusinessShortCode": "174379",
-        "Password": "MTc0Mzc5YmZiMjc5ZjlhYTliZGJjZjE1OGU5N2RkNzFhNDY3Y2QyZTBjODkzMDU5YjEwZjc4ZTZiNzJhZGExZWQyYzkxOTIwMjQwMjI4MTEyNTI3",
-        "Timestamp": "20240228112527",
+        "BusinessShortCode": business_short_code,
+        "Password": password,
+        "Timestamp": timestamp,
         "TransactionType": "CustomerPayBillOnline",
         "Amount": amount,
         "PartyA": phone,
-        "PartyB": "174379",
+        "PartyB": business_short_code,
         "PhoneNumber": phone,
-        "CallBackURL": "https://yourdomain.com/callback",
+        "CallBackURL": "https://webhook.site/your-custom-url",  # Replace with your real URL
         "AccountReference": account_ref,
-        "TransactionDesc": "Payment for services"
+        "TransactionDesc": "School Fees Payment"
     }
 
     try:

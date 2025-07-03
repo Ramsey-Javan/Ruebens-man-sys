@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Student</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <h1>Add New Student</h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <ul>
+          {% for category, message in messages %}
+            <li class="{{ category }}">{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('add_student') }}">
+        <label>Full Name:</label><br>
+        <input type="text" name="full_name" required><br><br>
+
+        <label>Admission Number:</label><br>
+        <input type="text" name="admission_number" required><br><br>
+
+        <label>Date of Birth:</label><br>
+        <input type="date" name="date_of_birth" required><br><br>
+
+        <label>Gender:</label><br>
+        <select name="gender" required>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+        </select><br><br>
+
+        <label>Class Name:</label><br>
+        <input type="text" name="class_name" required><br><br>
+
+        <label>Parent Contact:</label><br>
+        <input type="text" name="parent_contact" required><br><br>
+
+        <button type="submit">Add Student</button>
+    </form>
+
+    <br><a href="{{ url_for('home') }}">Back to Home</a>
+</body>
+</html>
