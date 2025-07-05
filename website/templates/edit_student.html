@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Student | St. Rueben School{% endblock %}
+
+{% block content %}
+<div class="admin-container glass-panel" style="max-width: 800px; margin: 50px auto; padding: 40px;">
+    <div class="section-header" style="margin-bottom: 30px; text-align: center;">
+        <h2 class="section-title">Edit Student Details</h2>
+        <p>Update student information</p>
+    </div>
+
+    <form method="POST" action="{{ url_for('route_bp.edit_student', student_id=student.id) }}" class="neuromorphic-card" style="padding: 30px; background: rgba(18, 26, 43, 0.6);">
+        <div class="form-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 25px; margin-bottom: 30px;">
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" name="full_name" value="{{ student.full_name }}" required>
+            </div>
+
+            <div class="form-group">
+                <label>Admission Number</label>
+                <input type="text" name="admission_number" value="{{ student.admission_number }}" required>
+            </div>
+
+            <div class="form-group">
+                <label>Date of Birth</label>
+                <input type="date" name="date_of_birth" value="{{ student.date_of_birth.strftime('%Y-%m-%d') }}" required>
+            </div>
+
+            <div class="form-group">
+                <label>Gender</label>
+                <select name="gender" required>
+                    <option value="Male" {% if student.gender == 'Male' %}selected{% endif %}>Male</option>
+                    <option value="Female" {% if student.gender == 'Female' %}selected{% endif %}>Female</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Class Name</label>
+                <input type="text" name="class_name" value="{{ student.class_name }}" required>
+            </div>
+
+            <div class="form-group">
+                <label>Parent Contact</label>
+                <input type="text" name="parent_contact" value="{{ student.parent_contact }}" required>
+            </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between;">
+            <a href="{{ url_for('main_bp.home') }}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Cancel</a>
+            <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Save Changes</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
