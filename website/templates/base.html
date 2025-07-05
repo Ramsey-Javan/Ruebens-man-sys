@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}St. Rueben Comprehensive School{% endblock %}</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;600;700&family=Inter:wght@300;400;500&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <!-- Floating 3D Shapes Background -->
+    <div class="floating-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+    </div>
+
+    {% include 'navbar.html' %}
+
+    <main class="{% block main_class %}{% endblock %}">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-{{ category }} glass-panel">
+                            {{ message }}
+                            <span class="close-flash" onclick="this.parentElement.style.display='none';">&times;</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        
+        {% block content %}{% endblock %}
+    </main>
+
+    {% include 'footer.html' %}
+    {% include 'chatbot.html' %}
+
+    <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+    {% block scripts %}
+    <script>
+        const navOrb = document.getElementById('navOrb');
+        const radialMenu = document.getElementById('radialMenu');
+
+        if (navOrb && radialMenu) {
+            navOrb.addEventListener('click', () => {
+                radialMenu.classList.toggle('active');
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!navOrb.contains(e.target) && !radialMenu.contains(e.target)) {
+                    radialMenu.classList.remove('active');
+                }
+            });
+        }
+
+        const voiceIcon = document.querySelector('.voice-icon');
+        if (voiceIcon) {
+            voiceIcon.addEventListener('click', () => {
+                voiceIcon.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
+                setTimeout(() => {
+                    voiceIcon.innerHTML = '<i class="fas fa-microphone"></i>';
+                    alert("Today's schedule: Math at 8 AM, Science at 10 AM, History at 1 PM");
+                }, 1500);
+            });
+        }
+
+        document.querySelectorAll('.close-flash').forEach(button => {
+            button.addEventListener('click', function() {
+                this.parentElement.style.display = 'none';
+            });
+        });
+    </script>
+    {% endblock %}
+</body>
+</html>

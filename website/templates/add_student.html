@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Student | St. Rueben School{% endblock %}
+
+{% block content %}
+<div class="admin-container glass-panel" style="max-width: 800px; margin: 50px auto; padding: 40px;">
+    <div class="section-header" style="margin-bottom: 30px; text-align: center;">
+        <h2 class="section-title">Add New Student</h2>
+        <p>Register a new student in our system</p>
+    </div>
+
+    <form method="POST" action="{{ url_for('add_student') }}" class="neuromorphic-card" style="padding: 30px; background: rgba(18, 26, 43, 0.6);">
+        <div class="form-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 25px; margin-bottom: 30px;">
+            <div class="form-group">
+                <label style="display: block; margin-bottom: 10px; color: var(--text-light);">Full Name</label>
+                <input type="text" name="full_name" required style="width: 100%; padding: 14px; border-radius: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: white;">
+            </div>
+            
+            <div class="form-group">
+                <label style="display: block; margin-bottom: 10px; color: var(--text-light);">Admission Number</label>
+                <input type="text" name="admission_number" required style="width: 100%; padding: 14px; border-radius: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: white;">
+            </div>
+            
+            <div class="form-group">
+                <label style="display: block; margin-bottom: 10px; color: var(--text-light);">Date of Birth</label>
+                <input type="date" name="date_of_birth" required style="width: 100%; padding: 14px; border-radius: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: white;">
+            </div>
+            
+            <div class="form-group">
+                <label style="display: block; margin-bottom: 10px; color: var(--text-light);">Gender</label>
+                <select name="gender" required style="width: 100%; padding: 14px; border-radius: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: white;">
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label style="display: block; margin-bottom: 10px; color: var(--text-light);">Class Name</label>
+                <input type="text" name="class_name" required style="width: 100%; padding: 14px; border-radius: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: white;">
+            </div>
+            
+            <div class="form-group">
+                <label style="display: block; margin-bottom: 10px; color: var(--text-light);">Parent Contact</label>
+                <input type="text" name="parent_contact" required style="width: 100%; padding: 14px; border-radius: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: white;">
+            </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; gap: 20px;">
+            <a href="{{ url_for('home') }}" class="btn btn-secondary" style="flex: 1; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-arrow-left"></i> Back to Home
+            </a>
+            <button type="submit" class="btn btn-primary" style="flex: 1; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-plus"></i> Add Student
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

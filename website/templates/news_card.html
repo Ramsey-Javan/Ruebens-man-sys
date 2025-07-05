@@ -1,0 +1,24 @@
+<div class="grid-item">
+    <div class="section-header">
+        <h2 class="section-title">Resources</h2>
+    </div>
+    
+    {% for category in download_categories %}
+    <div class="neuromorphic-card">
+        <div class="card-header">
+            <div class="card-icon">
+                <i class="{{ category.icon }}"></i>
+            </div>
+            <h3 class="card-title">{{ category.name }}</h3>
+        </div>
+        <div class="download-content">
+            {% for item in category.items %}
+            <div class="download-item">
+                <p>{{ item.name }}</p>
+                <a href="{{ item.link }}" class="download-btn">Download</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
