@@ -9,26 +9,27 @@
         <p>Register a new student in our system</p>
     </div>
 
-    <form method="POST" action="{{ url_for('add_student') }}" class="neuromorphic-card" style="padding: 30px; background: rgba(18, 26, 43, 0.6);">
+    <!-- ✅ FIXED blueprint reference -->
+    <form method="POST" action="{{ url_for('route_bp.add_student') }}" class="neuromorphic-card" style="padding: 30px; background: rgba(18, 26, 43, 0.6);">
         <div class="form-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 25px; margin-bottom: 30px;">
             <div class="form-group">
                 <label style="display: block; margin-bottom: 10px; color: var(--text-light);">Full Name</label>
-                <input type="text" name="full_name" required style="width: 100%; padding: 14px; border-radius: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: white;">
+                <input type="text" name="full_name" required>
             </div>
             
             <div class="form-group">
                 <label style="display: block; margin-bottom: 10px; color: var(--text-light);">Admission Number</label>
-                <input type="text" name="admission_number" required style="width: 100%; padding: 14px; border-radius: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: white;">
+                <input type="text" name="admission_number" required>
             </div>
             
             <div class="form-group">
                 <label style="display: block; margin-bottom: 10px; color: var(--text-light);">Date of Birth</label>
-                <input type="date" name="date_of_birth" required style="width: 100%; padding: 14px; border-radius: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: white;">
+                <input type="date" name="date_of_birth" required>
             </div>
             
             <div class="form-group">
                 <label style="display: block; margin-bottom: 10px; color: var(--text-light);">Gender</label>
-                <select name="gender" required style="width: 100%; padding: 14px; border-radius: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: white;">
+                <select name="gender" required>
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
                 </select>
@@ -36,20 +37,21 @@
             
             <div class="form-group">
                 <label style="display: block; margin-bottom: 10px; color: var(--text-light);">Class Name</label>
-                <input type="text" name="class_name" required style="width: 100%; padding: 14px; border-radius: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: white;">
+                <input type="text" name="class_name" required>
             </div>
             
             <div class="form-group">
                 <label style="display: block; margin-bottom: 10px; color: var(--text-light);">Parent Contact</label>
-                <input type="text" name="parent_contact" required style="width: 100%; padding: 14px; border-radius: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: white;">
+                <input type="text" name="parent_contact" required>
             </div>
         </div>
 
         <div style="display: flex; justify-content: space-between; gap: 20px;">
-            <a href="{{ url_for('home') }}" class="btn btn-secondary" style="flex: 1; display: flex; align-items: center; justify-content: center;">
+            <!-- ✅ FIXED href -->
+            <a href="{{ url_for('main_bp.home') }}" class="btn btn-secondary">
                 <i class="fas fa-arrow-left"></i> Back to Home
             </a>
-            <button type="submit" class="btn btn-primary" style="flex: 1; display: flex; align-items: center; justify-content: center;">
+            <button type="submit" class="btn btn-primary">
                 <i class="fas fa-plus"></i> Add Student
             </button>
         </div>
