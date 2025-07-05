@@ -1,25 +1,37 @@
 version: '3.8'
+
 services:
   web:
     build: .
     ports:
       - "5000:5000"
+    env_file:
+      - .env
     volumes:
       - .:/app
-    environment:
-      FLASK_ENV: delopment
-      MPESA_API_KEY: your_mpesa_api_key
-      DATABASE_URL: postgresql://user:password@db/app
+      - ./website:/app/website
+      - ./templates:/app/templates
+      - ./static:/app/static
+      - ./app.py:/app/app.py
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+    command: ["./wait-for-db.sh"]
 
   db:
     image: postgres:13
+    restart: always
     environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRESS_DB: app
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: st_rueben
     volumes:
-      - postgres_data:/var/lib/postgressql/data
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 volumes:
   postgres_data:

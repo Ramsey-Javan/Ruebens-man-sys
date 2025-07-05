@@ -1,18 +1,20 @@
-#Use official Python base image
-FROM python:3.9-slim
+FROM python:3.10-slim
 
-#Use working DIR
-WORKDIR  /app
+# Install PostgreSQL client (contains pg_isready)
+RUN apt-get update && apt-get install -y postgresql-client && rm -rf /var/lib/apt/lists/*
 
-#Copy requirements first to leverage Docker cache
+WORKDIR /app
+
 COPY requirements.txt .
+RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy all application file 
 COPY . .
 
-# Expose the port your app runs on (change 5000 if needed)
+COPY wait-for-db.sh .
+
+RUN chmod +x wait-for-db.sh
+
 EXPOSE 5000
 
-# Command to run the application
-CMD ["python","website/app.py"]
+CMD ["./wait-for-db.sh"]

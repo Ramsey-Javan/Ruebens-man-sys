@@ -1,0 +1,25 @@
+<div class="grid-item glass-panel">
+    <div class="section-header">
+        <h2 class="section-title">Live Events</h2>
+        <div class="live-indicator">
+            <span class="live-dot"></span> LIVE
+        </div>
+    </div>
+    
+    <div class="events-container">
+        {% for event in events %}
+        <div class="event-card">
+            <div class="event-date">
+                <div class="event-day">{{ event.day }}</div>
+                <div class="event-month">{{ event.month }}</div>
+            </div>
+            <div class="event-content">
+                <h3 class="event-title">{{ event.title }}</h3>
+                <div class="event-time">
+                    <i class="fas fa-clock"></i> {{ event.time }} | {{ event.location }}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>

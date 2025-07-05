@@ -1,0 +1,41 @@
+<div class="nav-container">
+    <div class="logo">
+        <i class="fas fa-graduation-cap"></i>
+        St. Rueben
+    </div>
+</div>
+
+<div class="nav-orb" id="navOrb">
+    <i class="fas fa-bars"></i>
+</div>
+
+<div class="radial-menu" id="radialMenu">
+    <a href="{{ url_for('main_bp.home') }}" class="menu-item" style="top: 50px; left: 125px;">
+        <i class="fas fa-home"></i>
+        <span>Home</span>
+    </a>
+    <a href="#" class="menu-item" style="top: 125px; left: 50px;">
+        <i class="fas fa-calendar"></i>
+        <span>Calendar</span>
+    </a>
+    <a href="#" class="menu-item" style="top: 200px; left: 125px;">
+        <i class="fas fa-book"></i>
+        <span>Academics</span>
+    </a>
+    <a href="#" class="menu-item" style="top: 125px; left: 200px;">
+        <i class="fas fa-download"></i>
+        <span>Downloads</span>
+    </a>
+
+    {% if current_user.is_authenticated %}
+    <a href="{{ url_for('route_bp.logout') }}" class="menu-item" style="top: 200px; left: 200px;">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Logout</span>
+    </a>
+    {% else %}
+    <a href="{{ url_for('route_bp.login') }}" class="menu-item" style="top: 200px; left: 200px;">
+        <i class="fas fa-user"></i>
+        <span>Login</span>
+    </a>
+    {% endif %}
+</div>

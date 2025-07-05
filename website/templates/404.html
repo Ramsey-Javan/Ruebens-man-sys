@@ -1,55 +1,38 @@
 {% extends 'base.html' %}
 
-{% block title %}Server Error | St. Rueben School{% endblock %}
+{% block title %}Page Not Found | St. Rueben School{% endblock %}
 
 {% block content %}
 <div class="error-container glass-panel" style="max-width: 700px; margin: 100px auto; text-align: center; padding: 50px;">
     <div class="error-icon" style="font-size: 6rem; color: var(--photon-blue); margin-bottom: 30px;">
-        <i class="fas fa-exclamation-triangle"></i>
+        <i class="fas fa-map-signs"></i>
     </div>
     
-    <h1 class="section-title" style="margin-bottom: 20px;">500 - Quantum Flux Detected</h1>
+    <h1 class="section-title" style="margin-bottom: 20px;">404 - Quantum Path Not Found</h1>
     <p style="font-size: 1.2rem; margin-bottom: 30px; color: var(--text-gray);">
-        Our systems have encountered a temporal anomaly. The technical team has been alerted.
+        The digital dimension you're seeking has shifted or doesn't exist in our continuum.
     </p>
     
     <div class="holographic-display" style="background: rgba(0, 102, 255, 0.1); border-radius: 15px; padding: 25px; margin: 30px 0; border: 1px solid rgba(0, 102, 255, 0.3);">
-        <h3 style="margin-bottom: 15px; color: var(--electric-teal);">Recommended Actions</h3>
+        <h3 style="margin-bottom: 15px; color: var(--electric-teal);">Navigation Options</h3>
         <ul style="text-align: left; list-style-type: none; padding: 0;">
             <li style="padding: 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
                 <i class="fas fa-arrow-right" style="color: var(--cyber-lime); margin-right: 10px;"></i>
-                Return to the home page and try again
+                Return to the home page
             </li>
             <li style="padding: 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
                 <i class="fas fa-arrow-right" style="color: var(--cyber-lime); margin-right: 10px;"></i>
-                Contact tech support if the issue persists
+                Use our navigation orb to find your destination
             </li>
             <li style="padding: 10px;">
                 <i class="fas fa-arrow-right" style="color: var(--cyber-lime); margin-right: 10px;"></i>
-                Check our system status dashboard
+                Contact support if you believe this is a system error
             </li>
         </ul>
     </div>
-    
-    <!-- Fixed login button if needed -->
-    {% if not current_user.is_authenticated %}
-    <a href="{{ url_for('route_bp.login') }}" class="btn btn-secondary" style="margin-right: 10px;">
-        <i class="fas fa-user"></i> Login
-    </a>
-    {% endif %}
     
     <a href="{{ url_for('main_bp.home') }}" class="btn btn-primary" style="margin-top: 20px;">
         <i class="fas fa-home"></i> Return to Home
     </a>
 </div>
-{% endblock %}
-
-{% block scripts %}
-<script>
-    document.querySelectorAll('.close-flash').forEach(button => {
-        button.addEventListener('click', function() {
-            this.parentElement.style.display = 'none';
-        });
-    });
-</script> 
 {% endblock %}
