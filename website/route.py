@@ -3,6 +3,7 @@ from flask_login import login_user, login_required, logout_user, current_user
 from website.models import User, Student
 from werkzeug.security import check_password_hash
 from datetime import datetime
+from collections import defaultdict
 
 # Blueprints
 main_bp = Blueprint('main_bp', __name__)
@@ -33,7 +34,21 @@ def view_students():
         ).all()
     else:
         students = Student.query.all()
-    return render_template('students.html', students=students, search=query)
+
+    # Group students by class
+    grouped_students = defaultdict(list)
+    for student in students:
+        grouped_students[student.class_name].append(student)
+    # Sort classes alphabetically
+    sorted_classes = sorted(grouped_students.keys())
+    students = {class_name: grouped_students[class_name] for class_name in sorted_classes}
+
+    return render_template(
+    'students.html',
+    students=students,
+    grouped_students=grouped_students,
+    search=query
+)
 
 # Add student (GET shows form, POST submits it)
 @route_bp.route('/students/add', methods=['GET', 'POST'])
