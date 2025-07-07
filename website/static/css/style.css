@@ -220,6 +220,16 @@ body {
     color: white;
 }
 
+.nav-btn {
+    padding: 12px 20px;
+    background-color: #0099ff;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    display: inline-block;
+}
+
+
 .radial-menu {
     position: absolute;
     bottom: 80px;

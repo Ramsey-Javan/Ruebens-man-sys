@@ -3,6 +3,8 @@
 {% block title %}Manage Students | St. Rueben School{% endblock %}
 
 {% block content %}
+{% if current_user.role in ['admin', 'teacher'] %}
+
 <div class="admin-container glass-panel" style="max-width: 1100px; margin: 50px auto; padding: 40px;">
     <div class="section-header" style="margin-bottom: 30px; text-align: center;">
         <h2 class="section-title">Student Records</h2>
@@ -39,7 +41,7 @@
                     <td>{{ student.full_name }}</td>
                     <td>{{ student.admission_number }}</td>
                     <td>{{ student.class_name }}</td>
-                    <td>{{ student.date_of_birth.strftime('%Y-%m-%d') }}</td>
+                    <td>{{ student.date_of_birth.strftime('%Y-%m-%d') if student.date_of_birth else 'N/A' }}</td>
                     <td>{{ student.gender }}</td>
                     <td>{{ student.parent_contact }}</td>
                     <td style="white-space: nowrap;">
@@ -60,4 +62,8 @@
         </table>
     </div>
 </div>
+
+{% else %}
+<p style="text-align:center; margin-top: 60px; font-size: 1.2rem; color: red;">You do not have permission to view this page.</p>
+{% endif %}
 {% endblock %}
