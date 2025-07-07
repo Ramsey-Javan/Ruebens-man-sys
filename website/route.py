@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from flask_login import login_user, login_required, logout_user
+from flask_login import login_user, login_required, logout_user, current_user
 from website.models import User, Student
 from werkzeug.security import check_password_hash
 from datetime import datetime
@@ -20,6 +20,10 @@ def home():
 @route_bp.route('/students')
 @login_required
 def view_students():
+    if current_user.role not in ['admin', 'teacher']:
+        flash("Access denied.", "error")
+        return redirect(url_for('main_bp.home'))
+
     query = request.args.get('search', '').strip()
     if query:
         students = Student.query.filter(
@@ -35,6 +39,10 @@ def view_students():
 @route_bp.route('/students/add', methods=['GET', 'POST'])
 @login_required
 def add_student():
+    if current_user.role not in ['admin', 'teacher']:
+        flash("Access denied.", "error")
+        return redirect(url_for('main_bp.home'))
+
     if request.method == 'POST':
         full_name = request.form.get('full_name')
         admission_number = request.form.get('admission_number')
@@ -74,6 +82,10 @@ def add_student():
 @route_bp.route('/students/edit/<int:student_id>', methods=['GET', 'POST'])
 @login_required
 def edit_student(student_id):
+    if current_user.role not in ['admin', 'teacher']:
+        flash("Access denied.", "error")
+        return redirect(url_for('main_bp.home'))
+
     student = Student.query.get_or_404(student_id)
 
     if request.method == 'POST':
@@ -102,6 +114,10 @@ def edit_student(student_id):
 @route_bp.route('/students/delete/<int:student_id>', methods=['POST'])
 @login_required
 def delete_student(student_id):
+    if current_user.role not in ['admin', 'teacher']:
+        flash("Access denied.", "error")
+        return redirect(url_for('main_bp.home'))
+
     student = Student.query.get_or_404(student_id)
     try:
         from website.models import db

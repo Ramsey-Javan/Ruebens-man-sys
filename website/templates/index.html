@@ -11,6 +11,24 @@
         {% include 'spotlight.html' %}
         {% include 'tour_preview.html' %}
         
+                <!-- Show Manage Students button for Admins and Teachers only -->
+        {% if current_user.role in ['admin', 'teacher'] %}
+        <div class="grid-item glass-panel">
+            <div class="section-header">
+                <h2 class="section-title">Student Management</h2>
+            </div>
+            <div class="student-card">
+                <p>Manage student records, view details, and perform edits.</p>
+                <a href="{{ url_for('route_bp.view_students') }}"
+                class="nav-btn"
+                style="display:inline-block; padding: 12px 20px; background-color:#0099ff; color:white; text-decoration:none; border-radius:8px;">
+                Manage Students
+                </a>
+            </div>
+        </div>
+        {% endif %}
+
+
         <!-- Personalized Content -->
         <div class="grid-item glass-panel">
             <div class="section-header">
