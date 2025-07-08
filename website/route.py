@@ -4,6 +4,10 @@ from website.models import User, Student
 from werkzeug.security import check_password_hash
 from datetime import datetime
 from collections import defaultdict
+from sqlalchemy import or_
+from sqlalchemy.exc import IntegrityError
+from website import db
+
 
 # Blueprints
 main_bp = Blueprint('main_bp', __name__)
@@ -25,30 +29,42 @@ def view_students():
         flash("Access denied.", "error")
         return redirect(url_for('main_bp.home'))
 
-    query = request.args.get('search', '').strip()
-    if query:
-        students = Student.query.filter(
-            Student.full_name.ilike(f'%{query}%') |
-            Student.admission_number.ilike(f'%{query}%') |
-            Student.class_name.ilike(f'%{query}%')
-        ).all()
-    else:
-        students = Student.query.all()
+    search = request.args.get('search', '').strip()
+    selected_class = request.args.get('class', '')
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
 
-    # Group students by class
+    query = Student.query
+
+    if search:
+        query = query.filter(
+            or_(
+                Student.full_name.ilike(f'%{search}%'),
+                Student.admission_number.ilike(f'%{search}%'),
+                Student.class_name.ilike(f'%{search}%')
+            )
+        )
+
+    if selected_class:
+        query = query.filter_by(class_name=selected_class)
+
+    pagination = query.order_by(Student.class_name.asc()).paginate(page=page, per_page=per_page, error_out=False)
+    students_paginated = pagination.items
+
     grouped_students = defaultdict(list)
-    for student in students:
+    for student in students_paginated:
         grouped_students[student.class_name].append(student)
-    # Sort classes alphabetically
-    sorted_classes = sorted(grouped_students.keys())
-    students = {class_name: grouped_students[class_name] for class_name in sorted_classes}
+
+    all_classes = [c[0] for c in Student.query.with_entities(Student.class_name).distinct()]
 
     return render_template(
-    'students.html',
-    students=students,
-    grouped_students=grouped_students,
-    search=query
-)
+        'students.html',
+        grouped_students=grouped_students,
+        search=search,
+        selected_class=selected_class,
+        class_list=all_classes,
+        pagination=pagination
+    )
 
 # Add student (GET shows form, POST submits it)
 @route_bp.route('/students/add', methods=['GET', 'POST'])
@@ -66,7 +82,6 @@ def add_student():
         class_name = request.form.get('class_name')
         parent_contact = request.form.get('parent_contact')
 
-        # Convert string to date
         try:
             dob = datetime.strptime(dob, '%Y-%m-%d').date()
         except ValueError:
@@ -83,13 +98,19 @@ def add_student():
         )
 
         try:
-            from website.models import db
             db.session.add(new_student)
             db.session.commit()
             flash("Student added successfully!", "success")
             return redirect(url_for('route_bp.view_students'))
+
+        except IntegrityError:
+            db.session.rollback()
+            flash("Admission number already exists. Please use a unique one.", "error")
         except Exception as e:
-            flash(f"Error adding student: {str(e)}", "error")
+            db.session.rollback()
+            flash(f"Unexpected error: {str(e)}", "error")
+
+        return redirect(url_for('route_bp.add_student'))
 
     return render_template('add_student.html')
 
