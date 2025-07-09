@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Add Student Spotlight | St. Rueben{% endblock %}
+
+{% block content %}
+<div class="container glass-panel">
+    <h2 class="section-title">Add Student Spotlight</h2>
+    <form method="POST" action="{{ url_for('route_bp.add_spotlight') }}" enctype="multipart/form-data" class="form-box">
+
+        <div class="form-group">
+            <label for="headline">Headline:</label>
+            <input type="text" id="headline" name="headline" placeholder="e.g. Top Achiever Term 2" required>
+        </div>
+
+        <div class="form-group">
+            <label for="body">Description:</label>
+            <textarea id="body" name="body" rows="6" placeholder="Write about the student’s achievement..." required></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="image">Student Image (optional):</label>
+            <input type="file" id="image" name="image" accept="image/*">
+        </div>
+
+        <button type="submit" class="submit-btn">Add Spotlight</button>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const form = document.querySelector("form");
+        form.addEventListener("submit", function (event) {
+            const headline = document.getElementById("headline").value.trim();
+            const body = document.getElementById("body").value.trim();
+
+            if (!headline || !body) {
+                event.preventDefault();
+                alert("Please fill in all fields.");
+            }
+        });
+    });
+</script>
+{% endblock %}

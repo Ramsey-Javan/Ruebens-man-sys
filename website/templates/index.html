@@ -6,12 +6,49 @@
     {% include 'hero.html' %}
     
     <div class="sections-grid">
-        {% include 'events.html' %}
-        {% include 'news_card.html' %}  <!-- Fixed to singular -->
-        {% include 'spotlight.html' %}
-        {% include 'tour_preview.html' %}
         
-                <!-- Show Manage Students button for Admins and Teachers only -->
+        <!-- Student Spotlight -->
+        <div class="grid-item glass-panel">
+            <div class="section-header">
+                <h2 class="section-title">Student Spotlight</h2>
+            </div>
+            <div class="spotlight-container">
+                {% for spotlight in spotlights %}
+                <div class="student-card">
+                    <div class="student-image">
+                        <img src="{{ spotlight.image or '/static/img/default.jpg' }}" alt="{{ spotlight.headline }}">
+                    </div>
+                    <h3 class="student-name">{{ spotlight.headline }}</h3>
+                    <div class="student-achievement">
+                        Posted on {{ spotlight.posted_on.strftime('%B %d, %Y') }}
+                    </div>
+                    <p class="student-bio">{{ spotlight.body }}</p>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="section-footer">
+                <a href="{{ url_for('route_bp.view_spotlight') }}" class="nav-btn">View Student Spotlight</a>
+                {% if current_user.role in ['admin', 'teacher'] %}
+                    <a href="{{ url_for('route_bp.add_spotlight') }}" class="nav-btn">Add Spotlight</a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Live Events -->
+        <div class="grid-item glass-panel">
+            <div class="section-header">
+                <h2 class="section-title">Live Events</h2>
+            </div>
+            <p>Stay updated with what's happening at St. Rueben!</p>
+            <div class="button-group">
+                <a href="{{ url_for('route_bp.view_events') }}" class="nav-btn">See All Events</a>
+                {% if current_user.role in ['admin', 'teacher'] %}
+                    <a href="{{ url_for('route_bp.add_event') }}" class="nav-btn">Add Event</a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Student Management -->
         {% if current_user.role in ['admin', 'teacher'] %}
         <div class="grid-item glass-panel">
             <div class="section-header">
@@ -20,21 +57,36 @@
             <div class="student-card">
                 <p>Manage student records, view details, and perform edits.</p>
                 <a href="{{ url_for('route_bp.view_students') }}"
-                class="nav-btn"
-                style="display:inline-block; padding: 12px 20px; background-color:#0099ff; color:white; text-decoration:none; border-radius:8px;">
-                Manage Students
+                   class="nav-btn"
+                   style="display:inline-block; padding: 12px 20px; background-color:#0099ff; color:white; text-decoration:none; border-radius:8px;">
+                   Manage Students
                 </a>
             </div>
         </div>
         {% endif %}
 
+        <!-- Staff Management -->
+        {% if current_user.role == 'admin' %}
+        <div class="grid-item glass-panel">
+            <div class="section-header">
+                <h2 class="section-title">Staff Management</h2>
+            </div>
+            <div class="staff-card">
+                <p>Manage staff records, add new staff, and edit existing details.</p>
+                <a href="{{ url_for('route_bp.view_staff') }}"
+                   class="nav-btn"
+                   style="display:inline-block; padding: 12px 20px; background-color:#0099ff; color:white; text-decoration:none; border-radius:8px;">
+                   Manage Staff
+                </a>
+            </div>
+        </div>
+        {% endif %}
 
-        <!-- Personalized Content -->
+        <!-- Grade 10 Content -->
         <div class="grid-item glass-panel">
             <div class="section-header">
                 <h2 class="section-title">For Grade 10 Students</h2>
             </div>
-            
             <div class="events-container">
                 <div class="event-card">
                     <div class="event-date">
@@ -48,7 +100,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="event-card">
                     <div class="event-date">
                         <div class="event-day">12</div>
@@ -62,7 +114,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="download-item" style="margin-top: 20px; border: none; background: rgba(196, 240, 0, 0.1); border-radius: 10px; padding: 15px;">
                 <div>
                     <p style="font-weight: 500; margin-bottom: 5px;">Grade 10 Study Materials</p>
@@ -70,15 +122,21 @@
                 </div>
                 <a href="#" class="download-btn">Access</a>
             </div>
+
+            <div class="section-footer" style="margin-top: 20px;">
+                <a href="{{ url_for('route_bp.view_grade10news') }}" class="nav-btn">Read Grade 10 News</a>
+                {% if current_user.role in ['admin', 'teacher'] %}
+                    <a href="{{ url_for('route_bp.add_grade10news') }}" class="nav-btn">Post Grade 10 Update</a>
+                {% endif %}
+            </div>
         </div>
-        
-        <!-- Fees Payment -->
+
+        <!-- M-Pesa Fee Payment -->
         <div class="grid-item glass-panel">
             <div class="section-header">
                 <h2 class="section-title">Fees Payment</h2>
             </div>
-            
-            <form class="neuromorphic-card" style="padding: 25px; background: rgba(18, 26, 43, 0.6);">
+            <form method="POST" action="{{ url_for('main_bp.pay_fees') }}" class="neuromorphic-card" style="padding: 25px; background: rgba(18, 26, 43, 0.6);">
                 <div class="form-group" style="margin-bottom: 20px;">
                     <label for="Student_id" style="display: block; margin-bottom: 8px; color: var(--text-gray);">Student ID</label>
                     <input type="text" id="Student_id" name="Student_id" required style="width: 100%; padding: 12px 15px; border-radius: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: white;">
@@ -94,70 +152,27 @@
                 <button type="submit" style="width: 100%; padding: 14px; border-radius: 8px; background: linear-gradient(90deg, var(--photon-blue), var(--electric-teal)); color: white; font-weight: 600; border: none; cursor: pointer;">Pay via M-pesa</button>
             </form>
         </div>
+
     </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-    // Micro-interactions for cards
     const cards = document.querySelectorAll('.neuromorphic-card, .event-card, .student-card');
     cards.forEach(card => {
         card.addEventListener('mousemove', (e) => {
             const rect = card.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
-            
             const centerX = rect.width / 2;
             const centerY = rect.height / 2;
-            
             const angleY = (x - centerX) / 8;
             const angleX = (centerY - y) / 8;
-            
             card.style.transform = `perspective(1000px) rotateX(${angleX}deg) rotateY(${angleY}deg)`;
         });
-        
         card.addEventListener('mouseleave', () => {
             card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0)';
         });
-    });
-    
-    // Download buttons functionality
-    const downloadButtons = document.querySelectorAll('.download-btn');
-    const downloadModal = document.getElementById('downloadModal');
-    const fileNameElement = document.getElementById('fileName');
-    const confirmDownloadBtn = document.getElementById('confirmDownload');
-    const cancelDownloadBtn = document.getElementById('cancelDownload');
-    let currentDownload = null;
-
-    downloadButtons.forEach(button => {
-        button.addEventListener('click', (e) => {
-            e.preventDefault();
-            const fileName = button.getAttribute('data-file') || button.textContent;
-            fileNameElement.textContent = fileName;
-            currentDownload = fileName;
-            downloadModal.style.display = 'flex';
-        });
-    });
-
-    confirmDownloadBtn.addEventListener('click', () => {
-        if (currentDownload) {
-            // Simulate download
-            alert(`Downloading: ${currentDownload}`);
-            downloadModal.style.display = 'none';
-            currentDownload = null;
-        }
-    });
-
-    cancelDownloadBtn.addEventListener('click', () => {
-        downloadModal.style.display = 'none';
-        currentDownload = null;
-    });
-
-    window.addEventListener('click', (e) => {
-        if (e.target === downloadModal) {
-            downloadModal.style.display = 'none';
-            currentDownload = null;
-        }
     });
 </script>
 {% endblock %}

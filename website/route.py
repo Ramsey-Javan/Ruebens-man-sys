@@ -7,7 +7,11 @@ from collections import defaultdict
 from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 from website import db
-
+from website.models import Staff
+from flask_login import login_required
+from website.models import Event
+from website.models import Spotlight, Grade10News
+from website.models import db
 
 # Blueprints
 main_bp = Blueprint('main_bp', __name__)
@@ -165,6 +169,106 @@ def delete_student(student_id):
 
     return redirect(url_for('route_bp.view_students'))
 
+# ---------------------- Staff Management ----------------------
+@route_bp.route('/staff')
+@login_required
+def view_staff():
+    if current_user.role not in ['admin']:
+        flash("Access denied.", "error")
+        return redirect(url_for('main_bp.home'))
+
+    staff_list = Staff.query.all()
+    return render_template('staff.html', staff_list=staff_list)
+
+@route_bp.route('/staff/add', methods=['GET', 'POST'])
+@login_required
+def add_staff():
+    if current_user.role not in ['admin']:
+        flash("Access denied.", "error")
+        return redirect(url_for('main_bp.home'))
+
+    if request.method == 'POST':
+        full_name = request.form.get('full_name')
+        staff_id = request.form.get('staff_id')
+        role = request.form.get('role')
+        contact = request.form.get('contact')
+        email = request.form.get('email')
+
+        # Check if any required field is empty
+        if not all([full_name, staff_id, role, contact, email]):
+            flash("All fields are required. Please fill in all details.", "error")
+            return render_template('add_staff.html')
+
+        # Check if staff ID or email already exists
+        existing_staff = Staff.query.filter(
+            (Staff.staff_id == staff_id) | (Staff.email == email)
+        ).first()
+        if existing_staff:
+            flash("Staff ID or email already exists. Please use unique values.", "error")
+            return render_template('add_staff.html')
+
+        new_staff = Staff(
+            full_name=full_name,
+            staff_id=staff_id,
+            role=role,
+            contact=contact,
+            email=email
+        )
+
+        try:
+            db.session.add(new_staff)
+            db.session.commit()
+            flash("Staff member added successfully!", "success")
+            return redirect(url_for('route_bp.view_staff'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Unexpected error: {str(e)}", "error")
+
+    return render_template('add_staff.html')
+
+@route_bp.route('/staff/edit/<int:staff_id>', methods=['GET', 'POST'])
+@login_required
+def edit_staff(staff_id):
+    if current_user.role not in ['admin']:
+        flash("Access denied.", "error")
+        return redirect(url_for('main_bp.home'))
+
+    staff = Staff.query.get_or_404(staff_id)
+
+    if request.method == 'POST':
+        staff.full_name = request.form.get('full_name')
+        staff.staff_id = request.form.get('staff_id')
+        staff.role = request.form.get('role')
+        staff.contact = request.form.get('contact')
+        staff.email = request.form.get('email')
+
+        try:
+            db.session.commit()
+            flash("Staff member updated successfully!", "success")
+            return redirect(url_for('route_bp.view_staff'))
+        except Exception as e:
+            flash(f"Error updating staff member: {str(e)}", "error")
+
+    return render_template('edit_staff.html', staff=staff)
+
+@route_bp.route('/staff/delete/<int:staff_id>', methods=['POST'])
+@login_required
+def delete_staff(staff_id):
+    if current_user.role not in ['admin']:
+        flash("Access denied.", "error")
+        return redirect(url_for('main_bp.home'))
+
+    staff = Staff.query.get_or_404(staff_id)
+    try:
+        db.session.delete(staff)
+        db.session.commit()
+        flash("Staff member deleted successfully!", "success")
+    except Exception as e:
+        flash(f"Error deleting staff member: {str(e)}", "error")
+
+    return redirect(url_for('route_bp.view_staff'))
+
+
 # ---------------------- Auth Routes ----------------------
 
 # Login
@@ -205,3 +309,97 @@ def pay_fees():
     flash("Payment initiated successfully.", "success")
 
     return redirect(url_for('main_bp.home'))
+
+# ---------------------- Live Events ----------------------
+@route_bp.route('/events')
+@login_required
+def view_events():
+    events = Event.query.order_by(Event.date).all()
+    return render_template('events.html', events=events)
+
+@route_bp.route('/events/add', methods=['GET', 'POST'])
+@login_required
+def add_event():
+    if current_user.role not in ['admin', 'teacher']:
+        flash("Access denied.", "error")
+        return redirect(url_for('main_bp.home'))
+
+    if request.method == 'POST':
+        title = request.form['title']
+        date = request.form['date']
+        location = request.form['location']
+        description = request.form['description']
+        new_event = Event(title=title, date=date, location=location, description=description)
+        db.session.add(new_event)
+        db.session.commit()
+        flash("Event added.", "success")
+        return redirect(url_for('route_bp.view_events'))
+
+    return render_template('add_event.html')
+
+# Spotlight 
+@route_bp.route('/spotlight')
+@login_required
+def view_spotlight():
+    if current_user.role not in ['admin', 'teacher', 'parent']:
+        flash("Access denied.", "error")
+        return redirect(url_for('main_bp.home'))
+
+    spotlights = Spotlight.query.order_by(Spotlight.posted_on.desc()).all()
+    return render_template('spotlight.html', spotlights=spotlights)
+    
+# Add spotlight
+@route_bp.route('/spotlight/add', methods=['GET', 'POST'])
+@login_required
+def add_spotlight():
+    if current_user.role not in ['admin', 'teacher']:
+        flash("Access denied.", "error")
+        return redirect(url_for('main_bp.home'))
+
+    if request.method == 'POST':
+        headline = request.form.get('headline')
+        body = request.form.get('body')
+
+        new_spotlight = Spotlight(headline=headline, body=body)
+
+        try:
+            db.session.add(new_spotlight)
+            db.session.commit()
+            flash("Spotlight posted successfully!", "success")
+            return redirect(url_for('route_bp.view_spotlight'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error: {str(e)}", "error")
+
+    return render_template('add_spotlight.html')
+
+# ---------------------- Grade 10 News ----------------------
+# Route to view Grade 10 news
+@route_bp.route('/grade10news')
+@login_required
+def view_grade10news():
+    if current_user.role not in ['admin', 'teacher', 'parent']:
+        flash("Access denied.", "error")
+        return redirect(url_for('main_bp.home'))
+
+    news_list = Grade10News.query.order_by(Grade10News.posted_on.desc()).all()
+    return render_template('grade10news.html', news_list=news_list)
+
+#Route to add Grade 10 news
+@route_bp.route('/grade10news/add', methods=['GET', 'POST'])
+@login_required
+def add_grade10news():
+    if current_user.role not in ['admin', 'teacher']:
+        flash("Access denied.", "error")
+        return redirect(url_for('main_bp.home'))
+
+    if request.method == 'POST':
+        title = request.form['title']
+        content = request.form['content']
+        news = Grade10News(title=title, content=content)
+        db.session.add(news)
+        db.session.commit()
+        flash('Grade 10 News added.', 'success')
+        return redirect(url_for('route_bp.view_grade10news'))
+    return render_template('add_grade10news.html')
+

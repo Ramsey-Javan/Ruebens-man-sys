@@ -1,7 +1,6 @@
-# models.py
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
-from datetime import date
+from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 
 db = SQLAlchemy()
@@ -28,6 +27,7 @@ class Staff(db.Model):
     staff_id = db.Column(db.String(20), unique=True, nullable=False)
     role = db.Column(db.String(50), nullable=False)
     contact = db.Column(db.String(15), nullable=False)
+    email = db.Column(db.String(100), unique=True, nullable=False)
 
     def __repr__(self):
         return f"<Staff {self.full_name} - {self.role}>"
@@ -42,6 +42,37 @@ class Grade(db.Model):
 
     def __repr__(self):
         return f"<Grade {self.subject} - {self.marks} Marks>"
+
+class Event(db.Model):
+    __tablename__ = 'events'
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(150), nullable=False)
+    date = db.Column(db.Date, nullable=False)
+    location = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+
+    def __repr__(self):
+        return f"<Event {self.title} on {self.date}>"
+
+class Spotlight(db.Model):
+    __tablename__ = 'spotlights'
+    id = db.Column(db.Integer, primary_key=True)
+    headline = db.Column(db.String(200), nullable=False)
+    body = db.Column(db.Text, nullable=False)
+    posted_on = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f"<Spotlight {self.headline}>"
+
+class Grade10News(db.Model):
+    __tablename__ = 'grade10news'
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    posted_on = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f"<Grade10News {self.title}>"
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
@@ -58,3 +89,4 @@ class User(UserMixin, db.Model):
 
     def __repr__(self):
         return f"<User {self.username} - {self.role}>"
+    
