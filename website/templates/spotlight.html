@@ -1,18 +1,31 @@
-<div class="grid-item glass-panel">
-    <div class="section-header">
-        <h2 class="section-title">Student Spotlight</h2>
-    </div>
-    
-    <div class="spotlight-container">
-        {% for student in spotlight_students %}
-        <div class="student-card">
-            <div class="student-image">
-                <img src="{{ student.image }}" alt="{{ student.name }}">
-            </div>
-            <h3 class="student-name">{{ student.name }}</h3>
-            <div class="student-achievement">{{ student.achievement }}</div>
-            <p class="student-bio">{{ student.bio }}</p>
+{% extends 'base.html' %}
+
+{% block title %}Student Spotlight | St. Rueben{% endblock %}
+
+{% block content %}
+<div class="container glass-panel">
+    <h2 class="section-title">Student Spotlight</h2>
+
+    {% if spotlights %}
+        <div class="spotlight-container">
+            {% for spotlight in spotlights %}
+                <div class="student-card">
+                    <h3 class="student-name">{{ spotlight.headline }}</h3>
+                    <div class="student-achievement">
+                        Posted on {{ spotlight.posted_on.strftime('%B %d, %Y') }}
+                    </div>
+                    <p class="student-bio">{{ spotlight.body }}</p>
+                </div>
+            {% endfor %}
         </div>
-        {% endfor %}
-    </div>
+    {% else %}
+        <p>No spotlights have been posted yet.</p>
+    {% endif %}
+
+    {% if current_user.role in ['admin', 'teacher'] %}
+        <div class="section-footer">
+            <a href="{{ url_for('route_bp.add_spotlight') }}" class="nav-btn">Add Spotlight</a>
+        </div>
+    {% endif %}
 </div>
+{% endblock %}

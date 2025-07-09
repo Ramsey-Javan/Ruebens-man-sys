@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Grade 10 News | St. Rueben{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="grid-item glass-panel">
+        <div class="section-header">
+            <h2 class="section-title">Grade 10 News</h2>
+            <div class="live-indicator">
+                <span class="live-dot"></span> LIVE
+            </div>
+        </div>
+        {% if news %}
+        <div class="news-container">
+            {% for item in news %}
+            <div class="news-card">
+                <div class="news-date"> 
+                    <div class="news-day">{{ item.day }}</div>
+                    <div class="news-month">{{ item.month }}</div>
+                </div>
+                <div class="news-content">
+                    <h3 class="news-title   
+">{{ item.title }}</h3>
+                    <p class="news-body">{{ item.body }}</p>    
+                    {% if item.image %}
+                    <img src="{{ url_for('static', filename='images/' + item.image) }}" alt="News Image" class="news-image  ">
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>      
+        {% else %}
+        <p>No news items have been added yet.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

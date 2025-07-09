@@ -1,5 +1,6 @@
 from flask import Flask
 from flask_login import LoginManager
+from flask_migrate import Migrate
 from .models import db
 from dotenv import load_dotenv
 import os
@@ -26,6 +27,7 @@ def create_app():
     # Initialize extensions
     db.init_app(app)
     login_manager.init_app(app)
+    migrate = Migrate(app, db)
 
     # Register blueprints
     app.register_blueprint(main_bp)
