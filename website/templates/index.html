@@ -82,6 +82,20 @@
         </div>
         {% endif %}
 
+        <!-- Grade and Performance -->
+        {% if current_user.role in ['admin', 'teacher'] %}
+        <div class="grid-item glass-panel">
+            <div class="section-header">
+                <h2 class="section-title">Student Performance</h2>
+            </div>
+            <div class="student-card">
+                <p>View academic performance, record scores, and analyze student grades.</p>
+                <a href="{{ url_for('route_bp.view_grades') }}" class="nav-btn">View Grades</a>
+                <a href="{{ url_for('route_bp.add_grade') }}" class="nav-btn">Add Grade</a>
+            </div>
+        </div>
+        {% endif %}
+
         <!-- Grade 10 Content -->
         <div class="grid-item glass-panel">
             <div class="section-header">

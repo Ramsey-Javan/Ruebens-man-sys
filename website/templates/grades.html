@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}Grades Overview | St. Rueben{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="glass-panel">
+        <div class="section-header">
+            <h2 class="section-title">All Student Grades</h2>
+            <div class="section-footer">
+                {% if current_user.role in ['admin', 'teacher'] %}
+                    <a href="{{ url_for('route_bp.add_grade') }}" class="nav-btn">Add Grade</a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <form method="GET" class="form-inline mb-3" style="display: flex; gap: 15px; flex-wrap: wrap;">
+            <select name="year">
+                <option value="">All Years</option>
+                {% for year in years %}
+                    <option value="{{ year }}" {% if request.args.get('year') == year|string %}selected{% endif %}>{{ year }}</option>
+                {% endfor %}
+            </select>
+
+            <select name="term">
+                <option value="">All Terms</option>
+                {% for term in terms %}
+                    <option value="{{ term }}" {% if request.args.get('term') == term %}selected{% endif %}>{{ term }}</option>
+                {% endfor %}
+            </select>
+
+            <select name="class_name">
+                <option value="">All Classes</option>
+                {% for class_name in class_names %}
+                    <option value="{{ class_name }}" {% if request.args.get('class_name') == class_name %}selected{% endif %}>{{ class_name }}</option>
+                {% endfor %}
+            </select>
+
+            <button type="submit" class="nav-btn">Filter</button>
+        </form>
+
+        <!-- Grade Table -->
+        {% if grades %}
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Class</th>
+                        <th>Subject</th>
+                        <th>Score</th>
+                        <th>Term</th>
+                        <th>Year</th>
+                        <th>Posted</th>
+                        {% if current_user.role in ['admin', 'teacher'] %}
+                            <th>Actions</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for grade in grades %}
+                    <tr>
+                        <td>{{ grade.student.full_name }} ({{ grade.student.admission_number }})</td>
+                        <td>{{ grade.student.class_name }}</td>
+                        <td>{{ grade.subject }}</td>
+                        <td>{{ grade.score }}</td>
+                        <td>{{ grade.term }}</td>
+                        <td>{{ grade.year }}</td>
+                        <td>{{ grade.posted_on.strftime('%Y-%m-%d') }}</td>
+                        {% if current_user.role in ['admin', 'teacher'] %}
+                        <td>
+                            <a href="{{ url_for('route_bp.edit_grade', grade_id=grade.id) }}" class="btn btn-sm">Edit</a>
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p>No grades have been posted yet.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
