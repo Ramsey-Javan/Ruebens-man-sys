@@ -12,6 +12,8 @@ from flask_login import login_required
 from website.models import Event
 from website.models import Spotlight, Grade10News
 from website.models import db
+from website.models import Grade
+
 
 # Blueprints
 main_bp = Blueprint('main_bp', __name__)
@@ -403,3 +405,109 @@ def add_grade10news():
         return redirect(url_for('route_bp.view_grade10news'))
     return render_template('add_grade10news.html')
 
+# Route to edit Grade 10 news
+@route_bp.route('/grade10news/edit/<int:news_id>', methods=['GET', 'POST'])
+@login_required
+def edit_grade10news(news_id):
+    if current_user.role not in ['admin', 'teacher']:
+        flash("Access denied.", "error")
+        return redirect(url_for('main_bp.home'))
+
+    news = Grade10News.query.get_or_404(news_id)
+
+    if request.method == 'POST':
+        news.title = request.form['title']
+        news.content = request.form['content']
+        db.session.commit()
+        flash('Grade 10 News updated.', 'success')
+        return redirect(url_for('route_bp.view_grade10news'))
+
+    return render_template('edit_grade10news.html', news=news)
+
+# Route to delete Grade 10 news
+
+# ---------------------- Performance and Grade  ----------------------
+# Add grade
+@route_bp.route('/grades/add', methods=['GET', 'POST'])
+@login_required
+def add_grade():
+    if current_user.role not in ['admin', 'teacher']:
+        flash("Access denied.", "error")
+        return redirect(url_for('main_bp.home'))
+
+    if request.method == 'POST':
+        student_id = request.form['student_id']
+        subject = request.form['subject']
+        score = request.form['score']
+        term = request.form['term']
+
+        grade = Grade(
+            student_id=student_id,
+            subject=subject,
+            score=score,
+            term=term
+        )
+        db.session.add(grade)
+        db.session.commit()
+        flash("Grade added successfully.", "success")
+        return redirect(url_for('route_bp.view_grades'))
+
+    students = Student.query.all()
+    return render_template('add_grade.html', students=students)
+
+# Edit grade
+@route_bp.route('/grades/edit/<int:grade_id>', methods=['GET', 'POST'])
+@login_required
+def edit_grade(grade_id):   
+    if current_user.role not in ['admin', 'teacher']:
+        flash("Access denied.", "error")
+        return redirect(url_for('main_bp.home'))
+
+    grade = Grade.query.get_or_404(grade_id)
+
+    if request.method == 'POST':
+        grade.student_id = request.form['student_id']
+        grade.subject = request.form['subject']
+        grade.score = request.form['score']
+        grade.term = request.form['term']
+        db.session.commit()
+        flash("Grade updated successfully.", "success")
+        return redirect(url_for('route_bp.view_grades'))
+
+    students = Student.query.all()
+    return render_template('edit_grade.html', grade=grade, students=students)
+
+# View grades with filters
+@route_bp.route('/grades', methods=['GET'])
+@login_required
+def view_grades():
+    if current_user.role not in ['admin', 'teacher']:
+        flash("Access denied.", "error")
+        return redirect(url_for('main_bp.home'))
+
+    year_filter = request.args.get('year')
+    term_filter = request.args.get('term')
+    class_filter = request.args.get('class_name')
+
+    query = Grade.query.join(Student)
+
+    if year_filter:
+        query = query.filter(Grade.year == year_filter)
+    if term_filter:
+        query = query.filter(Grade.term == term_filter)
+    if class_filter:
+        query = query.filter(Student.class_name == class_filter)
+
+    grades = query.order_by(Grade.year.desc(), Grade.term).all()
+
+    years = sorted({g.year for g in Grade.query.all()}, reverse=True)
+    terms = sorted({g.term for g in Grade.query.all()})
+    class_names = sorted({s.class_name for s in Student.query.all()})
+
+    return render_template(
+        'grades.html',
+        grades=grades,
+        years=years,
+        terms=terms,
+        class_names=class_names
+    )

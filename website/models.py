@@ -90,3 +90,15 @@ class User(UserMixin, db.Model):
     def __repr__(self):
         return f"<User {self.username} - {self.role}>"
     
+# Grade and Performance models
+class Grade(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey('students.id'), nullable=False)
+    subject = db.Column(db.String(100), nullable=False)
+    score = db.Column(db.Float, nullable=False)
+    term = db.Column(db.String(50), nullable=False)
+    year = db.Column(db.Integer, nullable=False, default=lambda: datetime.now().year)
+    posted_on = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f"<Grade {self.subject} - {self.score} for Student ID {self.student_id}>"
