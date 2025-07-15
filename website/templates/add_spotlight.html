@@ -6,7 +6,7 @@
 <div class="container glass-panel">
     <h2 class="section-title">Add Student Spotlight</h2>
     <form method="POST" action="{{ url_for('route_bp.add_spotlight') }}" enctype="multipart/form-data" class="form-box">
-
+        {{ form.hidden_tag() }}
         <div class="form-group">
             <label for="headline">Headline:</label>
             <input type="text" id="headline" name="headline" placeholder="e.g. Top Achiever Term 2" required>

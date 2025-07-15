@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}{{ student.full_name }}'s Performance{% endblock %}
+
+{% block content %}
+<div class="glass-panel" style="max-width: 900px; margin: 80px auto; padding: 40px; text-align: center; border-radius: 15px;">
+    <h2 style="font-size: 2rem; margin-bottom: 10px; color: var(--photon-blue);">
+        {{ student.full_name }}'s Academic Performance
+    </h2>
+    <p style="color: var(--text-gray); margin-bottom: 30px;">
+        Admission No: <strong>{{ student.admission_number }}</strong> |
+        Class: <strong>{{ student.class_name }}</strong>
+    </p>
+
+    {% if grades %}
+    <div class="table-container" style="overflow-x: auto;">
+        <table class="table table-bordered table-hover" style="width: 100%; border-radius: 10px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.2);">
+            <thead class="table-primary" style="background: rgba(0, 102, 255, 0.1);">
+                <tr style="color: var(--electric-teal);">
+                    <th>Subject</th>
+                    <th>Score</th>
+                    <th>Term</th>
+                    <th>Year</th>
+                    <th>Posted On</th>
+                </tr>
+            </thead>
+            <tbody style="color: #fff;">
+                {% for grade in grades %}
+                <tr>
+                    <td>{{ grade.subject }}</td>
+                    <td>{{ grade.score }}</td>
+                    <td>{{ grade.term }}</td>
+                    <td>{{ grade.year }}</td>
+                    <td>{{ grade.posted_on.strftime('%d %b %Y') }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+        <div class="alert alert-warning mt-4" style="color: var(--warning-yellow); background: rgba(255, 255, 0, 0.05); border: 1px solid rgba(255, 255, 0, 0.2);">
+            No performance records found for {{ student.full_name }}.
+        </div>
+    {% endif %}
+
+    <a href="{{ url_for('route_bp.public_view_performance') }}" class="btn btn-primary mt-4" style="padding: 10px 30px; border-radius: 8px;">
+        <i class="fas fa-search"></i> Search Another Student
+    </a>
+</div>
+{% endblock %}

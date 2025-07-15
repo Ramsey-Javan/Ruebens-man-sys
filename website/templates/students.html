@@ -19,7 +19,8 @@
         <form method="GET" action="{{ url_for('route_bp.view_students') }}">
             <select name="class" onchange="this.form.submit()" class="dropdown-glass" style="padding: 10px; border-radius: 10px; background: rgba(255,255,255,0.1); border: none; color: white;">
                 <option value="">Filter by Class</option>
-                {% for class_name in class_list %}
+                {% for class_tuple in class_list %}
+                    {% set class_name = class_tuple[0] %}
                     <option value="{{ class_name }}" {% if selected_class == class_name %}selected{% endif %}>
                         {{ class_name }}
                     </option>
@@ -42,9 +43,9 @@
 
             <div id="{{ class_name|replace(' ', '_') }}" class="student-table" style="display: none; margin-top: 10px;">
                 <div class="table-container glass-panel" style="overflow-x: auto; padding: 20px; border-radius: 12px;">
-                    <table class="styled-table" style="width: 100%; border-collapse: collapse;">
+                    <table class="styled-table" style="width: 100%; border-collapse: collapse; background-color: rgba(255,255,255,0.02); color:white">
                         <thead>
-                            <tr style="background-color: rgba(255, 255, 255, 0.05);">
+                            <tr style="background-color: rgba(255, 255, 255, 0.05); color: #fff">
                                 <th>#</th>
                                 <th>Name</th>
                                 <th>Admission No.</th>
@@ -61,7 +62,7 @@
                                 <td>{{ loop.index }}</td>
                                 <td>{{ student.full_name }}</td>
                                 <td>{{ student.admission_number }}</td>
-                                <td>{{ student.class_name }}</td>
+                                <td>{{ student.classroom.class_name }}</td>
                                 <td>{{ student.date_of_birth.strftime('%Y-%m-%d') if student.date_of_birth else 'N/A' }}</td>
                                 <td>{{ student.gender }}</td>
                                 <td>{{ student.parent_contact }}</td>
@@ -70,6 +71,8 @@
                                         <i class="fas fa-edit"></i>
                                     </a>
                                     <form action="{{ url_for('route_bp.delete_student', student_id=student.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this student?');">
+                                        {{ form.hidden_tag() }}
+                                        <input type="hidden" name="_method" value="DELETE">
                                         <button type="submit" class="btn-icon btn-danger" title="Delete">
                                             <i class="fas fa-trash-alt"></i>
                                         </button>

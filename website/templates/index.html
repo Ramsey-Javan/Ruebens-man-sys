@@ -95,11 +95,27 @@
             </div>
         </div>
         {% endif %}
+         <!-- Public Grade Access for Parents -->
+        {% if not current_user.is_authenticated  or current_user.role == 'parent'%}
+        <div class="grid-item glass-panel" style="background: rgba(255, 255, 255, 0.05);">
+            <div class="section-header">
+                <h2 class="section-title" style="color: var(--photon-blue);">Check Student Performance</h2>
+            </div>
+            <div class="student-card" style="color: var(--text-gray); margin-top: 10px;">
+                <p>Parents can view academic performance by entering the student’s name and admission number.</p>
+                <a href="{{ url_for('route_bp.public_view_performance') }}"
+                class="nav-btn"
+                style="display:inline-block; padding: 12px 20px; background-color:#0099ff; color:white; text-decoration:none; border-radius:8px;">
+                View Performance
+                </a>
+            </div>
+        </div>
+        {% endif %}
 
         <!-- Grade 10 Content -->
         <div class="grid-item glass-panel">
             <div class="section-header">
-                <h2 class="section-title">For Grade 10 Students</h2>
+                <h2 class="section-title">For Grade 9 Students</h2>
             </div>
             <div class="events-container">
                 <div class="event-card">
@@ -131,16 +147,16 @@
 
             <div class="download-item" style="margin-top: 20px; border: none; background: rgba(196, 240, 0, 0.1); border-radius: 10px; padding: 15px;">
                 <div>
-                    <p style="font-weight: 500; margin-bottom: 5px;">Grade 10 Study Materials</p>
+                    <p style="font-weight: 500; margin-bottom: 5px;">Grade 9 Study Materials</p>
                     <p style="font-size: 0.9rem; color: var(--text-gray);">Essential resources for your upcoming exams</p>
                 </div>
                 <a href="#" class="download-btn">Access</a>
             </div>
 
             <div class="section-footer" style="margin-top: 20px;">
-                <a href="{{ url_for('route_bp.view_grade10news') }}" class="nav-btn">Read Grade 10 News</a>
+                <a href="{{ url_for('route_bp.view_grade10news') }}" class="nav-btn">Read Grade 9 News</a>
                 {% if current_user.role in ['admin', 'teacher'] %}
-                    <a href="{{ url_for('route_bp.add_grade10news') }}" class="nav-btn">Post Grade 10 Update</a>
+                    <a href="{{ url_for('route_bp.add_grade10news') }}" class="nav-btn">Post Grade 9 Update</a>
                 {% endif %}
             </div>
         </div>

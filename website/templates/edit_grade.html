@@ -6,6 +6,8 @@
     <div class="glass-panel">
         <h2 class="section-title">Edit Grade</h2>
         <form method="POST">
+            {{ form.hidden_tag() }}
+
             <div class="form-group">
                 <label for="student_id">Student</label>
                 <select name="student_id" required>

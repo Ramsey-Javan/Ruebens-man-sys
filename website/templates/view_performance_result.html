@@ -1,0 +1,14 @@
+<!-- templates/view_performance_result.html -->
+<h2>Performance for {{ student.full_name }}</h2>
+
+{% for year, terms in grouped_grades.items() %}
+    <h3>{{ year }}</h3>
+    {% for term, grades in terms.items() %}
+        <h4>Term {{ term }}</h4>
+        <ul>
+            {% for grade in grades %}
+                <li>{{ grade.subject }}: {{ grade.score }}</li>
+            {% endfor %}
+        </ul>
+    {% endfor %}
+{% endfor %}

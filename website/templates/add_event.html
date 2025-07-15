@@ -4,6 +4,8 @@
 <div class="form-container">
     <h2>Add New Event</h2>
     <form method="POST" action="{{ url_for('route_bp.add_event') }}">
+        {{ form.hidden_tag() }}
+
         <div class="form-group">            
             <label for="title">Event Title:</label>
             <input type="text" id="title" name="title" required>

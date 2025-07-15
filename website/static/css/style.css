@@ -1055,3 +1055,8 @@ select option {
 .data-table tr:hover {
     background-color: rgba(0, 102, 255, 0.1);
 }
+
+.styled-table tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+    transition: background-color 0.3s ease;
+}
