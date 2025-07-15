@@ -2,11 +2,13 @@ from flask import Flask, render_template
 from flask_login import LoginManager
 from flask_migrate import Migrate
 from flask_wtf import CSRFProtect
-from .models import db, Classroom
+from flask_wtf.csrf import generate_csrf
 from dotenv import load_dotenv
 import os
-from .route import main_bp, route_bp,public_bp  # Import all blueprints
-from flask_wtf.csrf import CSRFProtect, generate_csrf
+
+from .models import db, Classroom, User  # Include both Classroom and User
+from .route import main_bp, route_bp, public_bp  # Register all blueprints
+
 
 # Load environment variables
 load_dotenv()
@@ -16,6 +18,11 @@ csrf = CSRFProtect()
 # Setup Login Manager
 login_manager = LoginManager()
 login_manager.login_view = 'route_bp.login'  # Where your login route is
+
+# Register the user_loader function
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id)) 
 
 def create_app():
     app = Flask(__name__, template_folder='templates', static_folder='static')

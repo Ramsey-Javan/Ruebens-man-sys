@@ -48,9 +48,10 @@ class Staff(db.Model):
 
     def __repr__(self):
         return f"<Staff {self.full_name} - {self.role}>"
+
+
 # Grade and Performance models
 class Grade(db.Model):
-    __tablename__ = 'grades'
     id = db.Column(db.Integer, primary_key=True)
     student_id = db.Column(db.Integer, db.ForeignKey('students.id'), nullable=False)
     subject = db.Column(db.String(100), nullable=False)
@@ -59,7 +60,6 @@ class Grade(db.Model):
     year = db.Column(db.Integer, nullable=False, default=lambda: datetime.now().year)
     posted_on = db.Column(db.DateTime, default=datetime.utcnow)
 
-    student = db.relationship('Student', back_populates='grades', lazy=True)
 
     def __repr__(self):
         return f"<Grade {self.subject} - {self.score} for Student ID {self.student_id}>"
@@ -128,4 +128,7 @@ class User(UserMixin, db.Model):
 
     def __repr__(self):
         return f"<User {self.username} - {self.role}>"
+<<<<<<< HEAD
     
+=======
+>>>>>>> b216992 (Fix Grade model, clean migrations, working display)

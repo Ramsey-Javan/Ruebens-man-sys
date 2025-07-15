@@ -88,8 +88,7 @@ def view_students():
     if selected_class:
         query = query.filter(Classroom.class_name == selected_class)
 
-    # Pagination
-    pagination = query.order_by(Classroom.class_name.asc()).paginate(page=page, per_page=per_page, error_out=False)
+    pagination = query.order_by(Student.class_name.asc()).paginate(page=page, per_page=per_page, error_out=False)
     students_paginated = pagination.items
 
     # Group students by class name
