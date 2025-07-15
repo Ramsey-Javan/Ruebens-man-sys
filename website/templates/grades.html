@@ -10,12 +10,20 @@
             <div class="section-footer">
                 {% if current_user.role in ['admin', 'teacher'] %}
                     <a href="{{ url_for('route_bp.add_grade') }}" class="nav-btn">Add Grade</a>
+                    <a href="{{ url_for('route_bp.add_grades_bulk') }}" class="nav-btn">Add Bulk Grades</a>
                 {% endif %}
             </div>
         </div>
 
+        <!-- Bulk Section Title -->
+        <div class="section-subtitle">
+            <h2>Add Bulk Grades</h2>
+        </div>
+
         <!-- Filters -->
         <form method="GET" class="form-inline mb-3" style="display: flex; gap: 15px; flex-wrap: wrap;">
+            {{ form.hidden_tag() }}
+
             <select name="year">
                 <option value="">All Years</option>
                 {% for year in years %}

@@ -1,33 +1,64 @@
+
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_user, login_required, logout_user, current_user
-from website.models import User, Student
+from website.models import User, Student,Staff,Event, Spotlight, Grade10News, db,Classroom, Grade , Grade, Event, Spotlight, Grade10News
 from werkzeug.security import check_password_hash
 from datetime import datetime
 from collections import defaultdict
 from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 from website import db
-from website.models import Staff
+from flask import abort
+from .forms import AddStudentForm, ClassSelectForm
 from flask_login import login_required
-from website.models import Event
-from website.models import Spotlight, Grade10News
-from website.models import db
-from website.models import Grade
+from datetime import datetime
+from website.models import Student, Grade, Classroom
+from website.forms import LoginForm
+
+
 
 
 # Blueprints
 main_bp = Blueprint('main_bp', __name__)
 route_bp = Blueprint('route_bp', __name__)
+public_bp = Blueprint('public_bp', __name__)
 
+# ---------------------- Route to Home ----------------------
+#Public Home Page
+@public_bp.route('/welcome')
+def public_home():
+    school_info = {
+        'name': 'St. Rueben School',
+        'location': 'Kisii, Kenya',
+        'student_count': 1200,
+        'staff_count': 50,
+        'mission': 'To provide quality education and holistic development.',
+        'vision': 'To be a leading institution in academic excellence and character development.',
+        'introduction': 'Welcome to St. Rueben School, where we nurture future leaders through quality education and character development.',
+    }
+    return render_template('public_home.html', info=school_info)
 # Home (requires login)
 @main_bp.route('/')
-@login_required
 def home():
-    return render_template('index.html')
-
+    from .models import Spotlight, Event
+    if current_user.is_authenticated:
+        Spotlight = Spotlight.query.order_by(Spotlight.posted_on.desc()).limit(5).all()
+        events = Event.query.order_by(Event.date.desc()).limit(5).all()
+        return render_template('index.html', spotlight=Spotlight, events=events)
+    else:
+        school_info = {
+            'name': 'St. Rueben School',
+            'location': 'Kisii, Kenya',
+            'student_count': 1200,  
+            'staff_count': 50,
+            'mission': 'To provide quality education and holistic development.',
+            'vision': 'To be a leading institution in academic excellence and character development.',
+            'introduction': 'Welcome to St. Rueben School, where we nurture future leaders through quality education and character development.',
+        }
+        return render_template('public_home.html', info=school_info)
 # ---------------------- Student Management ----------------------
 
-# View all students + search support
+# View all students + search + class filter + pagination
 @route_bp.route('/students')
 @login_required
 def view_students():
@@ -40,42 +71,56 @@ def view_students():
     page = request.args.get('page', 1, type=int)
     per_page = 10
 
-    query = Student.query
+    # Start the query, join with Classroom
+    query = db.session.query(Student).join(Classroom).options(db.joinedload(Student.classroom))
 
+    # Apply search filter
     if search:
         query = query.filter(
             or_(
                 Student.full_name.ilike(f'%{search}%'),
                 Student.admission_number.ilike(f'%{search}%'),
-                Student.class_name.ilike(f'%{search}%')
+                Classroom.class_name.ilike(f'%{search}%')
             )
         )
 
+    # Apply class filter
     if selected_class:
-        query = query.filter_by(class_name=selected_class)
+        query = query.filter(Classroom.class_name == selected_class)
 
-    pagination = query.order_by(Student.class_name.asc()).paginate(page=page, per_page=per_page, error_out=False)
+    # Pagination
+    pagination = query.order_by(Classroom.class_name.asc()).paginate(page=page, per_page=per_page, error_out=False)
     students_paginated = pagination.items
 
+    # Group students by class name
     grouped_students = defaultdict(list)
     for student in students_paginated:
-        grouped_students[student.class_name].append(student)
+        grouped_students[student.classroom.class_name].append(student)
 
-    all_classes = [c[0] for c in Student.query.with_entities(Student.class_name).distinct()]
+    # Get distinct list of class names for the filter dropdown
+    all_classes = (
+        db.session.query(Classroom.class_name)
+        .join(Student, Student.class_id == Classroom.id)
+        .distinct()
+        .all()
+    )
 
     return render_template(
         'students.html',
         grouped_students=grouped_students,
         search=search,
         selected_class=selected_class,
-        class_list=all_classes,
+        class_list=[cls[0] for cls in all_classes],
         pagination=pagination
     )
+
 
 # Add student (GET shows form, POST submits it)
 @route_bp.route('/students/add', methods=['GET', 'POST'])
 @login_required
 def add_student():
+    from .forms import AddStudentForm
+    form = AddStudentForm()
     if current_user.role not in ['admin', 'teacher']:
         flash("Access denied.", "error")
         return redirect(url_for('main_bp.home'))
@@ -83,9 +128,11 @@ def add_student():
     if request.method == 'POST':
         full_name = request.form.get('full_name')
         admission_number = request.form.get('admission_number')
+        UPI_number = request.form.get('upi_number')
+        assesment_number = request.form.get('assessment_number')
         dob = request.form.get('date_of_birth')
         gender = request.form.get('gender')
-        class_name = request.form.get('class_name')
+        class_id = request.form.get('class_id')
         parent_contact = request.form.get('parent_contact')
 
         try:
@@ -97,9 +144,11 @@ def add_student():
         new_student = Student(
             full_name=full_name,
             admission_number=admission_number,
+            UPI_number=UPI_number,
+            assesment_number=assesment_number,
             date_of_birth=dob,
             gender=gender,
-            class_name=class_name,
+            class_id= request.form.get('class_id'),
             parent_contact=parent_contact
         )
 
@@ -117,45 +166,58 @@ def add_student():
             flash(f"Unexpected error: {str(e)}", "error")
 
         return redirect(url_for('route_bp.add_student'))
-
-    return render_template('add_student.html')
+    
+    classrooms = Classroom.query.order_by(Classroom.class_name).all()
+    print(f"Available classrooms: {[c.class_name for c in classrooms]}")  # Debugging line  
+    return render_template('add_student.html',classrooms=classrooms,form=form)
 
 # Edit student
 @route_bp.route('/students/edit/<int:student_id>', methods=['GET', 'POST'])
 @login_required
 def edit_student(student_id):
+    from .forms import EditStudentForm
+    form = EditStudentForm()
     if current_user.role not in ['admin', 'teacher']:
         flash("Access denied.", "error")
         return redirect(url_for('main_bp.home'))
 
     student = Student.query.get_or_404(student_id)
+    classrooms = Classroom.query.order_by(Classroom.class_name.asc()).all()  #  Important
 
     if request.method == 'POST':
         student.full_name = request.form.get('full_name')
         student.admission_number = request.form.get('admission_number')
+        student.UPI_number = request.form.get('upi_number')
+        student.assessment_number = request.form.get('assessment_number')  #  Fixed typo
+
         try:
             student.date_of_birth = datetime.strptime(request.form.get('date_of_birth'), '%Y-%m-%d').date()
         except ValueError:
             flash("Invalid date format. Use YYYY-MM-DD.", "error")
             return redirect(url_for('route_bp.edit_student', student_id=student_id))
+
         student.gender = request.form.get('gender')
-        student.class_name = request.form.get('class_name')
+
+        # Assign class_id not class_name
+        class_id = request.form.get('class_id')
+        student.class_id = int(class_id) if class_id else None
+
         student.parent_contact = request.form.get('parent_contact')
 
         try:
-            from website.models import db
             db.session.commit()
             flash("Student updated successfully!", "success")
             return redirect(url_for('route_bp.view_students'))
         except Exception as e:
             flash(f"Error updating student: {str(e)}", "error")
 
-    return render_template('edit_student.html', student=student)
+    return render_template('edit_student.html', student=student, classrooms=classrooms,form=form)  #Pass classrooms
 
 # Delete student
 @route_bp.route('/students/delete/<int:student_id>', methods=['POST'])
 @login_required
 def delete_student(student_id):
+
     if current_user.role not in ['admin', 'teacher']:
         flash("Access denied.", "error")
         return redirect(url_for('main_bp.home'))
@@ -185,6 +247,9 @@ def view_staff():
 @route_bp.route('/staff/add', methods=['GET', 'POST'])
 @login_required
 def add_staff():
+    from .forms import AddStaffForm
+    staff_list = staff.query.all
+    form = AddStaffForm()
     if current_user.role not in ['admin']:
         flash("Access denied.", "error")
         return redirect(url_for('main_bp.home'))
@@ -226,7 +291,7 @@ def add_staff():
             db.session.rollback()
             flash(f"Unexpected error: {str(e)}", "error")
 
-    return render_template('add_staff.html')
+    return render_template('add_staff.html', form=form)
 
 @route_bp.route('/staff/edit/<int:staff_id>', methods=['GET', 'POST'])
 @login_required
@@ -276,6 +341,7 @@ def delete_staff(staff_id):
 # Login
 @route_bp.route('/login', methods=['GET', 'POST'])
 def login():
+    form = LoginForm()
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
@@ -284,11 +350,11 @@ def login():
         if user and check_password_hash(user.password_hash, password):
             login_user(user)
             flash('Login successful!', 'success')
-            return redirect(url_for('main_bp.home'))
+            return redirect(url_for('main_bp.home'))  # 🔁 One unified home
         else:
             flash('Invalid credentials. Try again.', 'error')
 
-    return render_template('login.html')
+    return render_template('login.html',form=form)
 
 # Logout
 @route_bp.route('/logout')
@@ -354,6 +420,8 @@ def view_spotlight():
 @route_bp.route('/spotlight/add', methods=['GET', 'POST'])
 @login_required
 def add_spotlight():
+    from .forms import SpotlightForm
+    form = SpotlightForm()
     if current_user.role not in ['admin', 'teacher']:
         flash("Access denied.", "error")
         return redirect(url_for('main_bp.home'))
@@ -373,7 +441,7 @@ def add_spotlight():
             db.session.rollback()
             flash(f"Error: {str(e)}", "error")
 
-    return render_template('add_spotlight.html')
+    return render_template('add_spotlight.html', form=form)
 
 # ---------------------- Grade 10 News ----------------------
 # Route to view Grade 10 news
@@ -391,6 +459,8 @@ def view_grade10news():
 @route_bp.route('/grade10news/add', methods=['GET', 'POST'])
 @login_required
 def add_grade10news():
+    from .forms import Grade10NewsForm
+    form = Grade10NewsForm()
     if current_user.role not in ['admin', 'teacher']:
         flash("Access denied.", "error")
         return redirect(url_for('main_bp.home'))
@@ -403,12 +473,14 @@ def add_grade10news():
         db.session.commit()
         flash('Grade 10 News added.', 'success')
         return redirect(url_for('route_bp.view_grade10news'))
-    return render_template('add_grade10news.html')
+    return render_template('add_grade10news.html', form=form)
 
 # Route to edit Grade 10 news
 @route_bp.route('/grade10news/edit/<int:news_id>', methods=['GET', 'POST'])
 @login_required
 def edit_grade10news(news_id):
+    from .forms import Grade10NewsForm
+    form = Grade10NewsForm()
     if current_user.role not in ['admin', 'teacher']:
         flash("Access denied.", "error")
         return redirect(url_for('main_bp.home'))
@@ -422,7 +494,7 @@ def edit_grade10news(news_id):
         flash('Grade 10 News updated.', 'success')
         return redirect(url_for('route_bp.view_grade10news'))
 
-    return render_template('edit_grade10news.html', news=news)
+    return render_template('edit_grade10news.html', news=news, form=form)
 
 # Route to delete Grade 10 news
 
@@ -431,6 +503,8 @@ def edit_grade10news(news_id):
 @route_bp.route('/grades/add', methods=['GET', 'POST'])
 @login_required
 def add_grade():
+    from .forms import AddGradeForm
+    form = AddGradeForm()
     if current_user.role not in ['admin', 'teacher']:
         flash("Access denied.", "error")
         return redirect(url_for('main_bp.home'))
@@ -453,12 +527,77 @@ def add_grade():
         return redirect(url_for('route_bp.view_grades'))
 
     students = Student.query.all()
-    return render_template('add_grade.html', students=students)
+    return render_template('add_grade.html', students=students, form=form)
+# ---------------------- Bulk Grade Entry ----------------------
+# Bulk Grade Entry
+@route_bp.route('/grades/bulk', methods=['GET', 'POST'])
+@route_bp.route('/grades/bulk/<int:class_id>', methods=['GET', 'POST'])
+@login_required
+def add_grades_bulk(class_id=None):
+    from .forms import BulkGradeForm
+    form = BulkGradeForm()
+    if request.method == 'POST' and class_id is None:
+        # First step: selecting the class
+        class_id = request.form.get('class_id')
+        return redirect(url_for('route_bp.add_grades_bulk', class_id=class_id))
+
+    if class_id is None:
+        # Step 1: show class selection form
+        classes = Classroom.query.all()
+        return render_template('select_class_for_grading.html', classes=classes)
+
+    # Step 2: Show grading form or process submitted grades
+    classroom = Classroom.query.get_or_404(class_id)
+    students = Student.query.filter_by(class_id=class_id).all()
+    current_year = datetime.now().year
+
+    if request.method == 'POST':
+        # ✅ FIX 1: Define subject, term, and year before using them
+        subject = request.form.get('subject')
+        term = request.form.get('term')
+        year = request.form.get('year')
+
+        # ✅ FIX 2: Validate them (optional but recommended)
+        if not subject or not term or not year:
+            flash("Subject, term, and year are required.", "danger")
+            return redirect(url_for('route_bp.add_grades_bulk', class_id=class_id))
+
+        added = 0
+        for student in students:
+            score = request.form.get(f'score_{student.id}')
+            if score:
+                try:
+                    score = float(score)
+                    new_grade = Grade(
+                        student_id=student.id,
+                        subject=subject,
+                        score=score,
+                        term=term,
+                        year=year
+                    )
+                    db.session.add(new_grade)
+                    added += 1
+                except ValueError:
+                    flash(f"Invalid score for {student.full_name}", "warning")
+
+        db.session.commit()
+        flash(f"{added} grades added successfully!", "success")
+        return redirect(url_for('route_bp.view_grades'))
+
+    return render_template(
+        'bulk_grading_form.html',
+        classroom=classroom,
+        students=students,
+        current_year=current_year,
+        form=form
+    )
 
 # Edit grade
 @route_bp.route('/grades/edit/<int:grade_id>', methods=['GET', 'POST'])
 @login_required
 def edit_grade(grade_id):   
+    from .forms import EditGradeForm
+    form = EditGradeForm()
     if current_user.role not in ['admin', 'teacher']:
         flash("Access denied.", "error")
         return redirect(url_for('main_bp.home'))
@@ -475,12 +614,13 @@ def edit_grade(grade_id):
         return redirect(url_for('route_bp.view_grades'))
 
     students = Student.query.all()
-    return render_template('edit_grade.html', grade=grade, students=students)
+    return render_template('edit_grade.html', grade=grade, students=students, form=form)
 
 # View grades with filters
 @route_bp.route('/grades', methods=['GET'])
 @login_required
 def view_grades():
+    
     if current_user.role not in ['admin', 'teacher']:
         flash("Access denied.", "error")
         return redirect(url_for('main_bp.home'))
@@ -489,20 +629,20 @@ def view_grades():
     term_filter = request.args.get('term')
     class_filter = request.args.get('class_name')
 
-    query = Grade.query.join(Student)
+    query = db.session.query(Grade).join(Student).join(Classroom)
 
     if year_filter:
         query = query.filter(Grade.year == year_filter)
     if term_filter:
         query = query.filter(Grade.term == term_filter)
     if class_filter:
-        query = query.filter(Student.class_name == class_filter)
+        query = query.filter(Classroom.class_name == class_filter)
 
     grades = query.order_by(Grade.year.desc(), Grade.term).all()
 
     years = sorted({g.year for g in Grade.query.all()}, reverse=True)
     terms = sorted({g.term for g in Grade.query.all()})
-    class_names = sorted({s.class_name for s in Student.query.all()})
+    class_names = sorted({s.classroom.class_name for s in Student.query.all() if s.classroom})
 
     return render_template(
         'grades.html',
@@ -511,3 +651,70 @@ def view_grades():
         terms=terms,
         class_names=class_names
     )
+
+# ---------------------- Parents and Public Routes ----------------------   
+# ------------------ Parents Grade Access ------------------
+@route_bp.route('/view-performance', methods=['GET', 'POST'])
+def public_view_performance():
+    if request.method == 'POST':
+        full_name = request.form.get('name', '').strip()
+        admission_number = request.form.get('admission_number', '').strip()
+
+        if not full_name or not admission_number:
+            flash("Please provide both name and admission number.", "error")
+            return redirect(url_for('route_bp.public_view_performance'))
+
+        student = Student.query.filter(
+            db.func.lower(Student.full_name) == full_name.lower(),
+            Student.admission_number == admission_number
+        ).first()
+
+        if not student:
+            flash("No matching student found. Please check the name and admission number.", "error")
+            return redirect(url_for('route_bp.public_view_performance'))
+
+        grades = Grade.query.filter_by(student_id=student.id).order_by(Grade.year.desc(), Grade.term).all()
+
+        if not grades:
+            flash("No grades found for this student.", "info")
+            return redirect(url_for('route_bp.public_view_performance'))
+
+        # Group grades by year and term
+        grouped_grades = defaultdict(lambda: defaultdict(list))
+        for grade in grades:
+            grouped_grades[grade.year][grade.term].append(grade)
+
+        return render_template(
+            'public_grades.html',
+            student=student,
+            grouped_grades=grouped_grades
+        )
+
+    # If GET request and user is logged in (e.g. admin/teacher), redirect
+    if current_user.is_authenticated and current_user.role in ['admin', 'teacher']:
+        flash("You are already logged in. Please log out to view performance as a parent.", "info")
+        return redirect(url_for('main_bp.home'))
+
+    # Show form to the public/parent
+    return render_template('view_performance.html',student=None, grouped_grades=None)
+
+#Parents View of Grades 
+@route_bp.route('/grades/view', methods=['GET', 'POST'])
+@login_required
+def view_student_grades():
+    if current_user.role != 'parent':
+        abort(403)
+
+    grades = []
+    if request.method == 'POST':
+        admission_no = request.form['admission_no']
+        student = Student.query.filter_by(admission_no=admission_no).first()
+        if student:
+            grades = Grade.query.filter_by(student_id=student.id).all()
+        else:
+            flash("Student not found", "danger")
+
+    return render_template('view_student_grades.html', grades=grades)
+
+
+# ---------------------- Error Handlers ----------------------

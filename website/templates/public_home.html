@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+
+{% block title %}Welcome to {{ info.name }}{% endblock %}
+
+{% block content %}
+<style>
+    .hero-panel {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(12px);
+        border-radius: 20px;
+        padding: 40px;
+        max-width: 1000px;
+        margin: 40px auto;
+        color: #f2f2f2;
+        box-shadow: 0 0 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .hero-panel h1 {
+        font-size: 2.8rem;
+        margin-bottom: 5px;
+        color: #fff;
+    }
+
+    .hero-panel p.location {
+        font-size: 1.2rem;
+        color: #ccc;
+        margin-bottom: 30px;
+    }
+
+    .stats {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 40px;
+        margin: 30px 0;
+    }
+
+    .stat-box {
+        background: rgba(255, 255, 255, 0.08);
+        padding: 20px 30px;
+        border-radius: 12px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+        text-align: center;
+        min-width: 120px;
+    }
+
+    .stat-box h2 {
+        font-size: 2rem;
+        margin: 0;
+        color: var(--photon-blue);
+    }
+
+    .stat-box p {
+        margin: 5px 0 0;
+        font-size: 1rem;
+        color: #bbb;
+    }
+
+    .school-image {
+        max-width: 100%;
+        height: auto;
+        border-radius: 16px;
+        box-shadow: 0 0 15px rgba(0,0,0,0.3);
+        margin-top: 20px;
+    }
+
+    .login-btn {
+        padding: 12px 30px;
+        font-size: 1.1rem;
+        background-color: var(--electric-teal);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        text-decoration: none;
+        transition: background 0.3s ease;
+    }
+
+    .login-btn:hover {
+        background-color: #0dc8c8;
+    }
+
+    @media (max-width: 768px) {
+        .stats {
+            flex-direction: column;
+            align-items: center;
+        }
+    }
+</style>
+
+<div class="hero-panel">
+    <h1>{{ info.name }}</h1>
+    <p class="location">{{ info.location }}</p>
+
+    <p style="line-height: 1.8;">{{ info.introduction }}</p>
+
+    <!-- Stats -->
+    <div class="stats">
+        <div class="stat-box">
+            <h2>{{ info.student_count }}</h2>
+            <p>Students</p>
+        </div>
+        <div class="stat-box">
+            <h2>{{ info.staff_count }}</h2>
+            <p>Staff Members</p>
+        </div>
+    </div>
+
+    <!-- Image -->
+    <div>
+        <img src="{{ url_for('static', filename='img/school_building.jpg') }}" alt="St. Rueben School Building"
+             class="school-image">
+        <p style="margin-top: 10px; color: #aaa;">Our beautiful campus in {{ info.location }}</p>
+    </div>
+
+    <!-- Login Button -->
+    <div style="margin-top: 40px;">
+        <a href="{{ url_for('route_bp.login') }}" class="login-btn">Login to School Portal</a>
+    </div>
+</div>
+{% endblock %}

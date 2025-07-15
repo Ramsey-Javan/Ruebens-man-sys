@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}View Performance{% endblock %}
+
+{% block content %}
+<div class="glass-panel" style="max-width: 600px; margin: 60px auto; padding: 30px; text-align: center; border-radius: 15px;">
+    <h2 style="font-size: 1.8rem; margin-bottom: 20px; color: var(--photon-blue);">Check Student Performance</h2>
+    <form method="POST" action="{{ url_for('route_bp.public_view_performance') }}">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            <label for="name">Student Full Name</label>
+            <input type="text" id="name" name="name" class="form-control" required
+                   style="margin-bottom: 15px; padding: 10px; width: 100%; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); color: white;">
+        </div>
+        <div class="form-group">
+            <label for="admission_number">Admission Number</label>
+            <input type="text" id="admission_number" name="admission_number" class="form-control" required
+                   style="margin-bottom: 20px; padding: 10px; width: 100%; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); color: white;">
+        </div>
+        <button type="submit" class="btn btn-primary" style="padding: 12px 30px; border-radius: 8px;">
+            <i class="fas fa-search"></i> View Performance
+        </button>
+    </form>
+</div>
+{% endblock %}

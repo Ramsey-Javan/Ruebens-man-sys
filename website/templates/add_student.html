@@ -9,8 +9,9 @@
         <p>Register a new student in our system</p>
     </div>
 
-    <!-- ✅ FIXED blueprint reference -->
+    <!--  blueprint reference -->
     <form method="POST" action="{{ url_for('route_bp.add_student') }}" class="neuromorphic-card" style="padding: 30px; background: rgba(18, 26, 43, 0.6);">
+        {{ form.hidden_tag() }}
         <div class="form-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 25px; margin-bottom: 30px;">
             <div class="form-group">
                 <label style="display: block; margin-bottom: 10px; color: var(--text-light);">Full Name</label>
@@ -37,17 +38,35 @@
             
             <div class="form-group">
                 <label style="display: block; margin-bottom: 10px; color: var(--text-light);">Class Name</label>
-                <input type="text" name="class_name" required>
+                <select name="class_id" required>
+                    <option value="" disabled selected>Select Class</option>
+                    {% for classroom in classrooms %}
+                        <option value="{{ classroom.id }}">{{ classroom.class_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+
+            <div class="form-group">
+                <label style="display: block; margin-bottom: 10px; color: var(--text-light);">UPI Number</label>
+                <input type="text" name="upi_number" required>
+            </div>
+
+            <div class="form-group">
+                <label style="display: block; margin-bottom: 10px; color: var(--text-light);">Assessment Number</label>
+                <input type="text" name="assessment_number" required>
             </div>
             
             <div class="form-group">
                 <label style="display: block; margin-bottom: 10px; color: var(--text-light);">Parent Contact</label>
                 <input type="text" name="parent_contact" required>
             </div>
+
+    
         </div>
 
         <div style="display: flex; justify-content: space-between; gap: 20px;">
-            <!-- ✅ FIXED href -->
+            <!-- href -->
             <a href="{{ url_for('main_bp.home') }}" class="btn btn-secondary">
                 <i class="fas fa-arrow-left"></i> Back to Home
             </a>

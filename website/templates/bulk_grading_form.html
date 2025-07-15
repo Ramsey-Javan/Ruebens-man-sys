@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Bulk Grades for {{ classroom.name }}{% endblock %}
+
+
+{% block content %}
+<div class="container mt-5">
+    <div class="glass-panel">
+        <h2>Add Grades for {{ classroom.name }}</h2>
+        
+        <form method="POST" action="{{ url_for('route_bp.add_grades_bulk', class_id=classroom.id) }}">
+            <!-- CSRF Token -->
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+            <div class="form-group">
+                <label for="subject">Subject:</label>
+                <input type="text" name="subject" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="term">Term:</label>
+                <select name="term" class="form-control" required>
+                    <option value="Term 1">Term 1</option>
+                    <option value="Term 2">Term 2</option>
+                    <option value="Term 3">Term 3</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="year">Year:</label>
+                <input type="number" name="year" class="form-control" value="{{ current_year }}" required>
+            </div>
+            <hr>
+            {% for student in students %}
+                <div class="form-group">
+                    <label>{{ student.full_name }} ({{ student.admission_number }})</label>
+                    <input type="number" name="score_{{ student.id }}" class="form-control" placeholder="Score for {{ student.full_name }}" required>
+                </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-success mt-3">Submit Grades</button>
+        </form>
+    </div>
+</div>
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="alert alert-{{ category }}">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+{% if errors %}
+    <div class="alert alert-danger mt-3">
+        <ul>
+            {% for error in errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endif %}
+{% if success %}
+    <div class="alert alert-success mt-3">
+        <strong>Success!</strong> Grades have been added successfully.
+    </div>
+{% endif %}
+</div>  
+{% endblock %}

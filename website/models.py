@@ -2,6 +2,9 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_wtf import FlaskForm
+from wtforms import StringField, SubmitField
+from wtforms.validators import DataRequired
 
 db = SQLAlchemy()
 
@@ -12,13 +15,27 @@ class Student(db.Model):
     admission_number = db.Column(db.String(20), unique=True, nullable=False)
     date_of_birth = db.Column(db.Date, nullable=False)
     gender = db.Column(db.String(10), nullable=False)
-    class_name = db.Column(db.String(50), nullable=False)
+    class_id = db.Column(db.Integer, db.ForeignKey('classrooms.id'), nullable=False)
     parent_contact = db.Column(db.String(15), nullable=False)
+    UPI_number = db.Column(db.String(20), unique=True, nullable=False)
+    assesment_number = db.Column(db.String(20), unique=True, nullable=False)
 
-    grades = db.relationship('Grade', backref='student', lazy=True)
+    classroom = db.relationship('Classroom', back_populates='students', lazy=True)
+    grades = db.relationship('Grade', back_populates='student', lazy=True)
 
     def __repr__(self):
         return f"<Student {self.full_name} - {self.admission_number}>"
+
+class Classroom(db.Model):
+    __tablename__ = 'classrooms'
+    id = db.Column(db.Integer, primary_key=True)
+    class_name = db.Column(db.String(50), unique=True, nullable=False)
+    teacher_id = db.Column(db.Integer, db.ForeignKey('staff.id'), nullable=True) # null based from false to true 
+
+    students = db.relationship('Student', back_populates='classroom', lazy=True)
+
+    def __repr__(self):
+        return f"<Classroom {self.class_name}>"
 
 class Staff(db.Model):
     __tablename__ = 'staff'
@@ -31,17 +48,39 @@ class Staff(db.Model):
 
     def __repr__(self):
         return f"<Staff {self.full_name} - {self.role}>"
-
+# Grade and Performance models
 class Grade(db.Model):
     __tablename__ = 'grades'
     id = db.Column(db.Integer, primary_key=True)
     student_id = db.Column(db.Integer, db.ForeignKey('students.id'), nullable=False)
-    subject = db.Column(db.String(50), nullable=False)
-    marks = db.Column(db.Float, nullable=False)
-    term = db.Column(db.String(20), nullable=False)
+    subject = db.Column(db.String(100), nullable=False)
+    score = db.Column(db.Float, nullable=False)
+    term = db.Column(db.String(50), nullable=False)
+    year = db.Column(db.Integer, nullable=False, default=lambda: datetime.now().year)
+    posted_on = db.Column(db.DateTime, default=datetime.utcnow)
+
+    student = db.relationship('Student', back_populates='grades', lazy=True)
 
     def __repr__(self):
-        return f"<Grade {self.subject} - {self.marks} Marks>"
+        return f"<Grade {self.subject} - {self.score} for Student ID {self.student_id}>"
+
+# performance model
+class Performance(db.Model):
+    __tablename__ = 'performances'
+    id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey('students.id'), nullable=False)
+    term = db.Column(db.String(50), nullable=False)
+    year = db.Column(db.Integer, nullable=False, default=lambda: datetime.now().year)
+    average_score = db.Column(db.Float, nullable=False)
+
+    def __repr__(self):
+        return f"<Performance for Student ID {self.student_id} - {self.term} {self.year}: {self.average_score}>"
+
+# Form for searching student performance
+class PerformanceSearchForm(FlaskForm): 
+    name = StringField("Student Name", validators=[DataRequired()])
+    admission_number = StringField("Admission Number", validators=[DataRequired()])
+    submit = SubmitField("View Performance")
 
 class Event(db.Model):
     __tablename__ = 'events'
@@ -90,15 +129,3 @@ class User(UserMixin, db.Model):
     def __repr__(self):
         return f"<User {self.username} - {self.role}>"
     
-# Grade and Performance models
-class Grade(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    student_id = db.Column(db.Integer, db.ForeignKey('students.id'), nullable=False)
-    subject = db.Column(db.String(100), nullable=False)
-    score = db.Column(db.Float, nullable=False)
-    term = db.Column(db.String(50), nullable=False)
-    year = db.Column(db.Integer, nullable=False, default=lambda: datetime.now().year)
-    posted_on = db.Column(db.DateTime, default=datetime.utcnow)
-
-    def __repr__(self):
-        return f"<Grade {self.subject} - {self.score} for Student ID {self.student_id}>"

@@ -1,0 +1,23 @@
+<form method="POST">
+    <table>
+        <thead>
+            <tr>
+                <th>Student</th>
+                {% for subject in subjects %}
+                    <th>{{ subject }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for student in students %}
+            <tr>
+                <td>{{ student.name }}</td>
+                {% for subject in subjects %}
+                <td><input type="number" name="{{ student.id }}_{{ subject }}" required></td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <button type="submit">Save Grades</button>
+</form>

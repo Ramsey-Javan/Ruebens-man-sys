@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block title %}Select Class for Bulk Grading | St. Rueben{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="glass-panel">
+        <h2 class="section-title">Select a Class for Bulk Grading</h2>
+
+        {% if classes %}
+            <form method="POST" action="{{ url_for('route_bp.add_grades_bulk') }}">
+                <!-- ✅ CSRF token (fixed) -->
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+                <div class="form-group">
+                    <label for="class_id" style="color: black;">Choose a Class:</label>
+                    <select id="classSelect" name="class_id" class="form-control" required style="color: black;">
+                        <option disabled selected value="">-- Select Class --</option>
+                        {% for classroom in classes %}
+                            <option value="{{ classroom.id }}">{{ classroom.class_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary mt-3">Proceed to Bulk Grading</button>
+            </form>
+        {% else %}
+            <p style="color: red;">No classes found. Please add classrooms first.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

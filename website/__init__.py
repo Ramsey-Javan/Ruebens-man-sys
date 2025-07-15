@@ -1,35 +1,53 @@
-from flask import Flask
+from flask import Flask, render_template
 from flask_login import LoginManager
 from flask_migrate import Migrate
-from .models import db
+from flask_wtf import CSRFProtect
+from .models import db, Classroom
 from dotenv import load_dotenv
 import os
-from flask import render_template
+from .route import main_bp, route_bp,public_bp  # Import all blueprints
+from flask_wtf.csrf import CSRFProtect, generate_csrf
 
 # Load environment variables
 load_dotenv()
 
-# Import blueprints (routes)
-from .route import main_bp, route_bp
+csrf = CSRFProtect()
 
 # Setup Login Manager
 login_manager = LoginManager()
-login_manager.login_view = 'route_bp.login'  # MUST match the blueprint where login route lives
+login_manager.login_view = 'route_bp.login'  # Where your login route is
 
 def create_app():
     app = Flask(__name__, template_folder='templates', static_folder='static')
 
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {'pool_pre_ping': True}
     app.secret_key = os.getenv('SECRET_KEY')
+    app.config['WTF_CSRF_ENABLED'] = True # Enable CSRF protection (False by default)
 
-    print("Loaded DATABASE_URL:", app.config['SQLALCHEMY_DATABASE_URI'])
+    print(f"Loaded DATABASE_URL: {os.getenv('DATABASE_URL')}")
 
-    # Register error handler
+    # Register blueprints (order matters: public first for root route)
+
+    app.register_blueprint(route_bp)
+    app.register_blueprint(main_bp)
+    app.register_blueprint(public_bp, url_prefix='/welcome')
+
+    # Initialize CSRF protection
+    csrf = CSRFProtect(app)
+    csrf.init_app(app)
+
+    # CSRF token injection for templates
+    @app.context_processor
+    def inject_csrf_token():
+        return dict(csrf_token=generate_csrf())
+    
+    # Error handlers
     @app.errorhandler(404)
     def not_found_error(error):
         return render_template('404.html'), 404
-    
+
     @app.errorhandler(500)
     def internal_error(error):
         return render_template('500.html'), 500
@@ -38,9 +56,5 @@ def create_app():
     db.init_app(app)
     login_manager.init_app(app)
     migrate = Migrate(app, db)
-
-    # Register blueprints
-    app.register_blueprint(main_bp)
-    app.register_blueprint(route_bp)
 
     return app
