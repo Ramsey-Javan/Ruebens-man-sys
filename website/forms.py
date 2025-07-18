@@ -71,12 +71,13 @@ class EditGradeForm(FlaskForm):
 
 # ---------------- EVENT FORM ----------------
 class EventForm(FlaskForm):
-    title = StringField('Title', validators=[DataRequired()])
-    description = TextAreaField('Description', validators=[DataRequired()])
-    date = DateField('Date', validators=[DataRequired()])
-    time = TimeField('Time', validators=[DataRequired()])
-    submit = SubmitField('Create Event')
-
+    title = StringField('Event Title', validators=[DataRequired()])
+    description = TextAreaField('Event Description', validators=[DataRequired()])
+    date = DateField('Event Date', validators=[DataRequired()])
+    time = TimeField('Event Time', validators=[DataRequired()])
+    location = StringField('Event Location', validators=[DataRequired()])
+    organizer = StringField('Event Organizer', validators=[DataRequired()])
+    submit = SubmitField('Add Event')
 
 # ---------------- SPOTLIGHT FORM ----------------
 class SpotlightForm(FlaskForm):
@@ -115,12 +116,3 @@ class GradeSearchForm(FlaskForm):
     student_class = StringField('Class', validators=[Optional()])
     submit = SubmitField('Search')
 
-#------------ EVENTS FORM  -----------
-class EventForm(FlaskForm):
-    title = StringField('Event Title', validators=[DataRequired()])
-    description = TextAreaField('Event Description', validators=[DataRequired()])
-    date = DateField('Event Date', validators=[DataRequired()])
-    time = TimeField('Event Time', validators=[DataRequired()])
-    location = StringField('Event Location', validators=[DataRequired()])
-    organizer = StringField('Event Organizer', validators=[DataRequired()])
-    submit = SubmitField('Add Event')
