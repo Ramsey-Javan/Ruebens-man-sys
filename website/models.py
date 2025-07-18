@@ -10,6 +10,7 @@ db = SQLAlchemy()
 
 class Student(db.Model):
     __tablename__ = 'students'
+
     id = db.Column(db.Integer, primary_key=True)
     full_name = db.Column(db.String(100), nullable=False)
     admission_number = db.Column(db.String(20), unique=True, nullable=False)
@@ -20,8 +21,10 @@ class Student(db.Model):
     UPI_number = db.Column(db.String(20), unique=True, nullable=False)
     assesment_number = db.Column(db.String(20), unique=True, nullable=False)
 
-    classroom = db.relationship('Classroom', back_populates='students', lazy=True)
+    #  Proper relationship to Grade
     grades = db.relationship('Grade', back_populates='student', lazy=True)
+    classroom = db.relationship('Classroom', back_populates='students')
+
 
     def __repr__(self):
         return f"<Student {self.full_name} - {self.admission_number}>"
@@ -60,11 +63,11 @@ class Grade(db.Model):
     year = db.Column(db.Integer, nullable=False, default=lambda: datetime.now().year)
     posted_on = db.Column(db.DateTime, default=datetime.utcnow)
 
+    # ✅ Back reference to Student
+    student = db.relationship('Student', back_populates='grades')
 
     def __repr__(self):
         return f"<Grade {self.subject} - {self.score} for Student ID {self.student_id}>"
-
-# performance model
 class Performance(db.Model):
     __tablename__ = 'performances'
     id = db.Column(db.Integer, primary_key=True)
@@ -128,7 +131,3 @@ class User(UserMixin, db.Model):
 
     def __repr__(self):
         return f"<User {self.username} - {self.role}>"
-<<<<<<< HEAD
-    
-=======
->>>>>>> b216992 (Fix Grade model, clean migrations, working display)

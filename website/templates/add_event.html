@@ -6,34 +6,41 @@
     <form method="POST" action="{{ url_for('route_bp.add_event') }}">
         {{ form.hidden_tag() }}
 
-        <div class="form-group">            
-            <label for="title">Event Title:</label>
-            <input type="text" id="title" name="title" required>
-        </div>      
         <div class="form-group">
-            <label for="description">Event Description:</label>
-            <textarea id="description" name="description" rows="6" required></textarea>
+            {{ form.title.label }}
+            {{ form.title(class="form-control") }}
         </div>
+
         <div class="form-group">
-            <label for="date">Event Date:</label>
-            <input type="date" id="date" name="date" required>
+            {{ form.description.label }}
+            {{ form.description(class="form-control", rows=6) }}
         </div>
-        <div class="form-group">    
-            <label for="time">Event Time:</label>
-            <input type="time" id="time" name="time" required>
-        </div>
+
         <div class="form-group">
-            <label for="location">Event Location:</label>
-            <input type="text" id="location" name="location" required>
+            {{ form.date.label }}
+            {{ form.date(class="form-control") }}
         </div>
+
         <div class="form-group">
-            <label for="organizer">Event Organizer:</label> 
-            <input type="text" id="organizer" name="organizer" required>
-        </div>      
-        <button type="submit" class="submit-btn">Add Event</button>
+            {{ form.time.label }}
+            {{ form.time(class="form-control") }}
+        </div>
+
+        <div class="form-group">
+            {{ form.location.label }}
+            {{ form.location(class="form-control") }}
+        </div>
+
+        <div class="form-group">
+            {{ form.organizer.label }}
+            {{ form.organizer(class="form-control") }}
+        </div>
+
+        <button type="submit" class="submit-btn">{{ form.submit.label }}</button>
     </form>
-</div>          
+</div>
 {% endblock %}
+
 
 {% block scripts %}
 <script>

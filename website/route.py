@@ -9,10 +9,10 @@ from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 from website import db
 from flask import abort
-from .forms import AddStudentForm, ClassSelectForm
+from .forms import AddStudentForm, ClassSelectForm, PublicPerformanceForm
 from flask_login import login_required
 from datetime import datetime
-from website.models import Student, Grade, Classroom
+from website.models import Student, Grade, Classroom, Staff
 from website.forms import LoginForm
 
 
@@ -88,7 +88,7 @@ def view_students():
     if selected_class:
         query = query.filter(Classroom.class_name == selected_class)
 
-    pagination = query.order_by(Student.class_name.asc()).paginate(page=page, per_page=per_page, error_out=False)
+    pagination = query.order_by(Classroom.class_name.asc()).paginate(page=page, per_page=per_page, error_out=False)
     students_paginated = pagination.items
 
     # Group students by class name
@@ -236,18 +236,21 @@ def delete_student(student_id):
 @route_bp.route('/staff')
 @login_required
 def view_staff():
+    from website.forms import StaffSearchForm
+    staff_list = Staff.query.all()
+    form = StaffSearchForm()
     if current_user.role not in ['admin']:
         flash("Access denied.", "error")
         return redirect(url_for('main_bp.home'))
 
     staff_list = Staff.query.all()
-    return render_template('staff.html', staff_list=staff_list)
+    return render_template('staff.html', staff_list=staff_list,form=form)
 
 @route_bp.route('/staff/add', methods=['GET', 'POST'])
 @login_required
 def add_staff():
     from .forms import AddStaffForm
-    staff_list = staff.query.all
+    staff_list = Staff.query.all
     form = AddStaffForm()
     if current_user.role not in ['admin']:
         flash("Access denied.", "error")
@@ -387,22 +390,27 @@ def view_events():
 @route_bp.route('/events/add', methods=['GET', 'POST'])
 @login_required
 def add_event():
+    from website.forms import EventForm
+    form = EventForm()
+
     if current_user.role not in ['admin', 'teacher']:
         flash("Access denied.", "error")
         return redirect(url_for('main_bp.home'))
 
-    if request.method == 'POST':
-        title = request.form['title']
-        date = request.form['date']
-        location = request.form['location']
-        description = request.form['description']
-        new_event = Event(title=title, date=date, location=location, description=description)
+
+    if form.validate_on_submit():
+        new_event = Event(
+            title=form.title.data,
+            date=form.date.data,
+            location=form.location.data,
+            description=form.description.data
+        )
         db.session.add(new_event)
         db.session.commit()
         flash("Event added.", "success")
         return redirect(url_for('route_bp.view_events'))
 
-    return render_template('add_event.html')
+    return render_template('add_event.html', form=form)
 
 # Spotlight 
 @route_bp.route('/spotlight')
@@ -619,6 +627,8 @@ def edit_grade(grade_id):
 @route_bp.route('/grades', methods=['GET'])
 @login_required
 def view_grades():
+    from website.forms import GradeSearchForm
+    form = GradeSearchForm()
     
     if current_user.role not in ['admin', 'teacher']:
         flash("Access denied.", "error")
@@ -648,20 +658,24 @@ def view_grades():
         grades=grades,
         years=years,
         terms=terms,
-        class_names=class_names
+        class_names=class_names,
+        form = form
     )
 
 # ---------------------- Parents and Public Routes ----------------------   
 # ------------------ Parents Grade Access ------------------
 @route_bp.route('/view-performance', methods=['GET', 'POST'])
 def public_view_performance():
-    if request.method == 'POST':
-        full_name = request.form.get('name', '').strip()
-        admission_number = request.form.get('admission_number', '').strip()
+    form = PublicPerformanceForm()
+    
+    #  Block logged-in admins/teachers FIRST
+    if current_user.is_authenticated and current_user.role in ['admin', 'teacher']:
+        flash("You are already logged in. Please log out to view performance as a parent.", "info")
+        return redirect(url_for('main_bp.home'))
 
-        if not full_name or not admission_number:
-            flash("Please provide both name and admission number.", "error")
-            return redirect(url_for('route_bp.public_view_performance'))
+    if form.validate_on_submit():
+        full_name = form.name.data.strip()
+        admission_number = form.admission_number.data.strip()
 
         student = Student.query.filter(
             db.func.lower(Student.full_name) == full_name.lower(),
@@ -689,13 +703,14 @@ def public_view_performance():
             grouped_grades=grouped_grades
         )
 
-    # If GET request and user is logged in (e.g. admin/teacher), redirect
-    if current_user.is_authenticated and current_user.role in ['admin', 'teacher']:
-        flash("You are already logged in. Please log out to view performance as a parent.", "info")
-        return redirect(url_for('main_bp.home'))
+    # Always return form at the end
+    return render_template(
+        'view_performance.html',
+        student=None,
+        grouped_grades=None,
+        form=form
+    )
 
-    # Show form to the public/parent
-    return render_template('view_performance.html',student=None, grouped_grades=None)
 
 #Parents View of Grades 
 @route_bp.route('/grades/view', methods=['GET', 'POST'])

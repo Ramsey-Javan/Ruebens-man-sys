@@ -3,6 +3,8 @@ from wtforms import StringField, PasswordField, SubmitField, SelectField, TextAr
 from wtforms.fields import DateField, TimeField  # ✅ this is the key line
 from wtforms.validators import DataRequired, Length, Optional
 
+from website.models import Student
+
 
 
 class ClassSelectForm(FlaskForm):
@@ -90,3 +92,35 @@ class Grade10NewsForm(FlaskForm):
     content = TextAreaField('Content', validators=[DataRequired()])
     submit = SubmitField('Post News')
 
+
+# --------------- PUBLIC GRADES ACCES  -------------
+class PublicPerformanceForm(FlaskForm):
+    name = StringField('Name ', validators=[DataRequired()])
+    admission_number = StringField('Admission Number', validators=[DataRequired()])
+    term = SelectField('Term', choices=[
+        ('', 'Any'), ('1', 'Term 1'), ('2', 'Term 2'), ('3', 'Term 3')
+    ], validators=[Optional()])
+    year = StringField('Year', validators=[Optional()])
+    subject = StringField('Subject', validators=[Optional()])
+    submit = SubmitField('Search')
+
+# ------------- STAFF SEARCH ----------
+class StaffSearchForm(FlaskForm):
+    search = StringField('Search Staff')
+    submit = SubmitField('Search')
+
+#----------- GRDAES SEARCH -----------
+class GradeSearchForm(FlaskForm):
+    admission_no = StringField('Admission Number', validators=[Optional()])
+    student_class = StringField('Class', validators=[Optional()])
+    submit = SubmitField('Search')
+
+#------------ EVENTS FORM  -----------
+class EventForm(FlaskForm):
+    title = StringField('Event Title', validators=[DataRequired()])
+    description = TextAreaField('Event Description', validators=[DataRequired()])
+    date = DateField('Event Date', validators=[DataRequired()])
+    time = TimeField('Event Time', validators=[DataRequired()])
+    location = StringField('Event Location', validators=[DataRequired()])
+    organizer = StringField('Event Organizer', validators=[DataRequired()])
+    submit = SubmitField('Add Event')
