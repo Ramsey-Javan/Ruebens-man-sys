@@ -116,3 +116,9 @@ class GradeSearchForm(FlaskForm):
     student_class = StringField('Class', validators=[Optional()])
     submit = SubmitField('Search')
 
+#----------- STUDENT SEARCH -----------
+class StudentSearchForm(FlaskForm):
+    name = StringField('Name', validators=[Optional()])
+    admission_no = StringField('Admission Number', validators=[Optional()])
+    class_id = SelectField('Class', coerce=int, validators=[Optional()])
+    submit = SubmitField('Search')

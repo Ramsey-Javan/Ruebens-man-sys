@@ -1,12 +1,16 @@
-from flask_sqlalchemy import SQLAlchemy
+from website.extensions import db, csrf, login_manager
 from flask_login import UserMixin
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
+from website.extensions import db
+from flask_sqlalchemy import SQLAlchemy
 
-db = SQLAlchemy()
+# Initialize SQLAlchemy
+#db = SQLAlchemy()
+#from website.extensions import db
 
 class Student(db.Model):
     __tablename__ = 'students'
@@ -39,6 +43,39 @@ class Classroom(db.Model):
 
     def __repr__(self):
         return f"<Classroom {self.class_name}>"
+    
+# GradeLevel = PP1, Grade 1, Grade 2, etc.
+class GradeLevel(db.Model):
+    __tablename__ = 'grade_levels'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), unique=True, nullable=False)
+
+    subjects = db.relationship('Subject', backref='grade_level', lazy=True)
+
+    def __repr__(self):
+        return f"<GradeLevel {self.name}>"
+
+
+# Subject (linked to grade)
+class Subject(db.Model):
+    __tablename__ = 'subjects'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    grade_level_id = db.Column(db.Integer, db.ForeignKey('grade_levels.id'), nullable=False)
+
+    def __repr__(self):
+        return f"<Subject {self.name} for Grade {self.grade_level.name}>"
+
+
+# Link Student to Subjects (after auto-enrollment)
+class StudentSubject(db.Model):
+    __tablename__ = 'student_subjects'
+    id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey('students.id'), nullable=False)
+    subject_id = db.Column(db.Integer, db.ForeignKey('subjects.id'), nullable=False)
+
+    def __repr__(self):
+        return f"<StudentSubject Student={self.student_id} Subject={self.subject_id}>"
 
 class Staff(db.Model):
     __tablename__ = 'staff'

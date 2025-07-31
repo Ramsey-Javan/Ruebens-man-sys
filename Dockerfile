@@ -15,6 +15,8 @@ COPY wait-for-db.sh .
 
 RUN chmod +x wait-for-db.sh
 
+ENV PYTHONPATH=/app
+
 EXPOSE 5000
 
 CMD ["./wait-for-db.sh"]
