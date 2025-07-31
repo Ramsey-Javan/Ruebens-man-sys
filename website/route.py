@@ -1,21 +1,20 @@
-
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
 from flask_login import login_user, login_required, logout_user, current_user
-from website.models import User, Student,Staff,Event, Spotlight, Grade10News, db,Classroom, Grade , Grade, Event, Spotlight, Grade10News
 from werkzeug.security import check_password_hash
 from datetime import datetime
 from collections import defaultdict
 from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
-from website import db
-from flask import abort
+
 from .forms import AddStudentForm, ClassSelectForm, PublicPerformanceForm
-from flask_login import login_required
-from datetime import datetime
-from website.models import Student, Grade, Classroom, Staff
+from website.services import auto_enroll_subjects
 from website.forms import LoginForm
 
-
+from website.models import (
+    User, Student, Staff, Event, Spotlight, Grade10News,
+    Grade, Classroom
+)
+from website.extensions import db
 
 
 # Blueprints
@@ -65,6 +64,8 @@ def view_students():
     if current_user.role not in ['admin', 'teacher']:
         flash("Access denied.", "error")
         return redirect(url_for('main_bp.home'))
+    from .forms import StudentSearchForm
+    form = StudentSearchForm()
 
     search = request.args.get('search', '').strip()
     selected_class = request.args.get('class', '')
@@ -106,6 +107,7 @@ def view_students():
 
     return render_template(
         'students.html',
+        form=form,
         grouped_students=grouped_students,
         search=search,
         selected_class=selected_class,
@@ -119,6 +121,8 @@ def view_students():
 @login_required
 def add_student():
     from .forms import AddStudentForm
+    from website.services import auto_enroll_subjects
+
     form = AddStudentForm()
     if current_user.role not in ['admin', 'teacher']:
         flash("Access denied.", "error")
@@ -147,13 +151,16 @@ def add_student():
             assesment_number=assesment_number,
             date_of_birth=dob,
             gender=gender,
-            class_id= request.form.get('class_id'),
+            class_id=class_id,
             parent_contact=parent_contact
         )
 
         try:
             db.session.add(new_student)
             db.session.commit()
+
+            auto_enroll_subjects(new_student)
+
             flash("Student added successfully!", "success")
             return redirect(url_for('route_bp.view_students'))
 
@@ -165,10 +172,10 @@ def add_student():
             flash(f"Unexpected error: {str(e)}", "error")
 
         return redirect(url_for('route_bp.add_student'))
-    
+
     classrooms = Classroom.query.order_by(Classroom.class_name).all()
-    print(f"Available classrooms: {[c.class_name for c in classrooms]}")  # Debugging line  
-    return render_template('add_student.html',classrooms=classrooms,form=form)
+    return render_template('add_student.html', classrooms=classrooms, form=form)
+
 
 # Edit student
 @route_bp.route('/students/edit/<int:student_id>', methods=['GET', 'POST'])
