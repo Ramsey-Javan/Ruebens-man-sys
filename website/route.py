@@ -519,92 +519,75 @@ def edit_grade10news(news_id):
 def add_grade():
     from .forms import AddGradeForm
     form = AddGradeForm()
+    
     if current_user.role not in ['admin', 'teacher']:
         flash("Access denied.", "error")
         return redirect(url_for('main_bp.home'))
 
-    if request.method == 'POST':
-        student_id = request.form['student_id']
-        subject = request.form['subject']
-        score = request.form['score']
-        term = request.form['term']
-
+    if form.validate_on_submit():
         grade = Grade(
-            student_id=student_id,
-            subject=subject,
-            score=score,
-            term=term
+            student_id=form.student_id.data,
+            learning_area=form.learning_area.data,
+            strand=form.strand.data,
+            sub_strand=form.sub_strand.data,
+            cbc_level=form.cbc_level.data,
+            term=form.term.data,
+            teacher_comment=form.teacher_comment.data
         )
         db.session.add(grade)
         db.session.commit()
         flash("Grade added successfully.", "success")
         return redirect(url_for('route_bp.view_grades'))
 
-    students = Student.query.all()
-    return render_template('add_grade.html', students=students, form=form)
+    return render_template('add_grade.html', form=form)
 # ---------------------- Bulk Grade Entry ----------------------
 # Bulk Grade Entry
-@route_bp.route('/grades/bulk', methods=['GET', 'POST'])
 @route_bp.route('/grades/bulk/<int:class_id>', methods=['GET', 'POST'])
 @login_required
-def add_grades_bulk(class_id=None):
-    from .forms import BulkGradeForm
-    form = BulkGradeForm()
-    if request.method == 'POST' and class_id is None:
-        # First step: selecting the class
-        class_id = request.form.get('class_id')
-        return redirect(url_for('route_bp.add_grades_bulk', class_id=class_id))
-
-    if class_id is None:
-        # Step 1: show class selection form
-        classes = Classroom.query.all()
-        return render_template('select_class_for_grading.html', classes=classes)
-
-    # Step 2: Show grading form or process submitted grades
+def add_grades_bulk(class_id):
     classroom = Classroom.query.get_or_404(class_id)
-    students = Student.query.filter_by(class_id=class_id).all()
-    current_year = datetime.now().year
-
+    students = Student.query.filter_by(class_id=class_id).order_by(Student.full_name).all()
+    
     if request.method == 'POST':
-        # ✅ FIX 1: Define subject, term, and year before using them
-        subject = request.form.get('subject')
+        strand = request.form.get('strand')
+        sub_strand = request.form.get('sub_strand')
         term = request.form.get('term')
-        year = request.form.get('year')
-
-        # ✅ FIX 2: Validate them (optional but recommended)
-        if not subject or not term or not year:
-            flash("Subject, term, and year are required.", "danger")
+        learning_area = request.form.get('learning_area')
+        
+        if not all([strand, sub_strand, term, learning_area]):
+            flash("All fields are required.", "danger")
             return redirect(url_for('route_bp.add_grades_bulk', class_id=class_id))
 
         added = 0
         for student in students:
-            score = request.form.get(f'score_{student.id}')
-            if score:
+            level_key = f"level_{student.id}"
+            comment_key = f"comment_{student.id}"
+            
+            if level_key in request.form:
                 try:
-                    score = float(score)
-                    new_grade = Grade(
-                        student_id=student.id,
-                        subject=subject,
-                        score=score,
-                        term=term,
-                        year=year
-                    )
-                    db.session.add(new_grade)
-                    added += 1
+                    cbc_level = int(request.form[level_key])
+                    if 1 <= cbc_level <= 4:  # Validate CBC level
+                        new_grade = Grade(
+                            student_id=student.id,
+                            learnbing_area=learning_area,
+                            strand=strand,
+                            sub_strand=sub_strand,
+                            cbc_level=cbc_level,
+                            term=term,
+                            teacher_comment=request.form.get(comment_key, "")
+                        )
+                        db.session.add(new_grade)
+                        added += 1
                 except ValueError:
-                    flash(f"Invalid score for {student.full_name}", "warning")
+                    flash(f"Invalid level for {student.full_name}", "warning")
 
         db.session.commit()
-        flash(f"{added} grades added successfully!", "success")
+        flash(f"{added} CBC grades added!", "success")
         return redirect(url_for('route_bp.view_grades'))
 
-    return render_template(
-        'bulk_grading_form.html',
-        classroom=classroom,
-        students=students,
-        current_year=current_year,
-        form=form
-    )
+    return render_template('bulk_grading_form.html', 
+                          classroom=classroom,
+                          students=students)
 
 # Edit grade
 @route_bp.route('/grades/edit/<int:grade_id>', methods=['GET', 'POST'])
@@ -634,40 +617,61 @@ def edit_grade(grade_id):
 @route_bp.route('/grades', methods=['GET'])
 @login_required
 def view_grades():
-    from website.forms import GradeSearchForm
-    form = GradeSearchForm()
-    
-    if current_user.role not in ['admin', 'teacher']:
-        flash("Access denied.", "error")
-        return redirect(url_for('main_bp.home'))
+    base_query = Grade.query.join(Student).join(Classroom)
 
-    year_filter = request.args.get('year')
-    term_filter = request.args.get('term')
-    class_filter = request.args.get('class_name')
+    # Apply filters
+    if request.args.get('year'):
+        base_query = base_query.filter(Grade.year == request.args.get('year'))
+    if request.args.get('term'):
+        base_query = base_query.filter(Grade.term == request.args.get('term'))
+    if request.args.get('strand'):
+        base_query = base_query.filter(Grade.strand == request.args.get('strand'))
+    if request.args.get('learning_area'):
+        base_query = base_query.filter(Grade.learning_area == request.args.get('learning_area'))
+    if request.args.get('class_name'):
+        base_query = base_query.filter(Classroom.class_name == request.args.get('class_name'))
 
-    query = db.session.query(Grade).join(Student).join(Classroom)
-
-    if year_filter:
-        query = query.filter(Grade.year == year_filter)
-    if term_filter:
-        query = query.filter(Grade.term == term_filter)
-    if class_filter:
-        query = query.filter(Classroom.class_name == class_filter)
-
-    grades = query.order_by(Grade.year.desc(), Grade.term).all()
+    # Pagination
+    page = request.args.get('page', 1, type=int)
+    grades = base_query.order_by(Grade.posted_on.desc()).paginate(page=page, per_page=10, error_out=False)
+   
 
     years = sorted({g.year for g in Grade.query.all()}, reverse=True)
     terms = sorted({g.term for g in Grade.query.all()})
-    class_names = sorted({s.classroom.class_name for s in Student.query.all() if s.classroom})
+    strands = sorted({g.strand for g in Grade.query.distinct(Grade.strand).all() if g.strand})
+    learning_areas = sorted({g.learning_area for g in Grade.query.distinct(Grade.learning_area).all()})
+    class_names = sorted({s.classroom.class_name for s in Student.query.join(Classroom).all() if s.classroom})
+    
+    filter_data = {
+    'year': years,
+    'term': terms,
+    'strand': strands,
+    'learning_area': learning_areas,
+    'class_name': class_names
+    }
 
-    return render_template(
-        'grades.html',
-        grades=grades,
-        years=years,
-        terms=terms,
-        class_names=class_names,
-        form = form
-    )
+    return render_template('cbc_grades.html',
+                            grades=grades,
+                            filter_data=filter_data,
+                            current_year=request.args.get('year'),
+                            current_term=request.args.get('term'),
+                            current_strand=request.args.get('strand'),
+                            current_learning_area=request.args.get('learning_area'),
+                            current_class_name=request.args.get('class_name'),
+                            pagination=grades)
+
+    
+# ---------------------- Dashboard Routes ----------------------
+@route_bp.route('/grades/delete/<int:grade_id>', methods=['DELETE'])
+@login_required
+def delete_grade(grade_id):
+    if current_user.role not in ['admin', 'teacher']:
+        return jsonify({"error": "Access denied"}), 403
+
+    grade = Grade.query.get_or_404(grade_id)
+    db.session.delete(grade)
+    db.session.commit()
+    return jsonify({"success": True}), 200
 
 # ---------------------- Parents and Public Routes ----------------------   
 # ------------------ Parents Grade Access ------------------

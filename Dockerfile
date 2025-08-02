@@ -12,8 +12,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 COPY wait-for-db.sh .
-
 RUN chmod +x wait-for-db.sh
+
+COPY entrypoint.sh .
+RUN chmod +x entrypoint.sh
+ENTRYPOINT [ "./entrypoint.sh" ]
 
 ENV PYTHONPATH=/app
 

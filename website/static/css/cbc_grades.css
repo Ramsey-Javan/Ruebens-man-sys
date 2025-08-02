@@ -1,0 +1,210 @@
+/* Custom styling for CBC grades */
+.glass-panel {
+    background: rgba(255, 255, 255, 0.85);
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.18));
+    color: var(--text-color, #121212);
+}
+
+.section-title {
+    color: #2c3e50;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 10px;
+    margin-bottom: 25px;
+}
+
+.cbc-legend {
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    padding: 15px;
+    border-left: 4px solid var(--accent-color, #3498db);
+    color: var(--text-color, #121212);
+}
+
+.legend-title {
+    font-size: 18px;
+    color: #2c3e50;
+    margin-bottom: 15px;
+}
+
+.legend-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.level-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    font-weight: bold;
+    color: white;
+}
+
+.level-1 { background-color: #e74c3c; }
+.level-2 { background-color: #f39c12; }
+.level-3 { background-color: #2ecc71; }
+.level-4 { background-color: #3498db; }
+
+.level-text {
+    margin-left: 5px;
+    font-size: 0.85em;
+    color: #7f8c8d;
+}
+
+.filter-form {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 25px;
+}
+
+.cbc-grades-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+.cbc-grades-table th {
+    background-color: #3498db;
+    color: white;
+    padding: 12px 15px;
+    text-align: left;
+}
+
+.cbc-grades-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #ecf0f1;
+}
+
+.cbc-grades-table tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+.cbc-grades-table tr:hover {
+    background-color: #e3f2fd;
+}
+
+.no-grades {
+    text-align: center;
+    padding: 40px 0;
+}
+
+.no-results-message {
+    max-width: 500px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.no-results-message i {
+    font-size: 48px;
+    color: #bdc3c7;
+    margin-bottom: 15px;
+}
+
+.no-results-message p {
+    font-size: 18px;
+    color: #7f8c8d;
+    margin-bottom: 20px;
+}
+
+.action-btn {
+    display: inline-block;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 32px;
+    margin: 0 3px;
+    transition: all 0.3s;
+}
+
+.action-btn.edit {
+    background-color: #3498db;
+    color: white;
+}
+
+.action-btn.delete {
+    background-color: #e74c3c;
+    color: white;
+}
+
+.action-btn:hover {
+    transform: scale(1.1);
+}
+
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 25px;
+}
+
+.pagination {
+    display: flex;
+    list-style: none;
+    padding: 0;
+}
+
+.page-item {
+    margin: 0 4px;
+}
+
+.page-link {
+    padding: 8px 16px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    color: #3498db;
+    text-decoration: none;
+    transition: all 0.3s;
+}
+
+.page-item.active .page-link {
+    background-color: #3498db;
+    border-color: #3498db;
+    color: white;
+}
+
+.page-link:hover {
+    background-color: #f8f9fa;
+}
+
+.nav-btn {
+    display: inline-block;
+    background: #3498db;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 30px;
+    text-decoration: none;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-right: 10px;
+    font-size: 14px;
+}
+
+.nav-btn:hover {
+    background: #2980b9;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.nav-btn.secondary {
+    background: #95a5a6;
+}
+
+.nav-btn.secondary:hover {
+    background: #7f8c8d;
+}
