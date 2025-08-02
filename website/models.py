@@ -28,6 +28,7 @@ class Student(db.Model):
     #  Proper relationship to Grade
     grades = db.relationship('Grade', back_populates='student', lazy=True)
     classroom = db.relationship('Classroom', back_populates='students')
+    performances = db.relationship('Performance', back_populates='student', cascade="all, delete-orphan")
 
 
     def __repr__(self):
@@ -92,19 +93,28 @@ class Staff(db.Model):
 
 # Grade and Performance models
 class Grade(db.Model):
+    __tablename__ = 'grades'
+    __table_args__ = (
+    db.Index('idx_grade_student', 'student_id'),
+    db.Index('idx_grade_year_term', 'year', 'term'),
+    db.Index('idx_grade_strand', 'strand'),
+    db.Index('idx_grade_learning_area', 'learning_area'),
+)
     id = db.Column(db.Integer, primary_key=True)
     student_id = db.Column(db.Integer, db.ForeignKey('students.id'), nullable=False)
-    subject = db.Column(db.String(100), nullable=False)
-    score = db.Column(db.Float, nullable=False)
+    learning_area = db.Column(db.String(100), nullable=False)  
+    strand = db.Column(db.String(100)) 
+    sub_strand = db.Column(db.String(100))  
+    cbc_level = db.Column(db.Integer, nullable=False)  
     term = db.Column(db.String(50), nullable=False)
     year = db.Column(db.Integer, nullable=False, default=lambda: datetime.now().year)
+    teacher_comment = db.Column(db.Text)  
     posted_on = db.Column(db.DateTime, default=datetime.utcnow)
 
-    # ✅ Back reference to Student
     student = db.relationship('Student', back_populates='grades')
 
     def __repr__(self):
-        return f"<Grade {self.subject} - {self.score} for Student ID {self.student_id}>"
+        return f"<Grade {self.strand} - Level {self.cbc_level} for {self.student.full_name}>"
 class Performance(db.Model):
     __tablename__ = 'performances'
     id = db.Column(db.Integer, primary_key=True)
@@ -112,6 +122,10 @@ class Performance(db.Model):
     term = db.Column(db.String(50), nullable=False)
     year = db.Column(db.Integer, nullable=False, default=lambda: datetime.now().year)
     average_score = db.Column(db.Float, nullable=False)
+    rank = db.Column(db.Integer, nullable=True) 
+    summary = db.Column(db.Text, nullable=True)
+    
+    student = db.relationship('Student', back_populates='performances')
 
     def __repr__(self):
         return f"<Performance for Student ID {self.student_id} - {self.term} {self.year}: {self.average_score}>"

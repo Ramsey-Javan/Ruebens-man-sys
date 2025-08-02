@@ -33,6 +33,18 @@ def load_user(user_id):
 def create_app():
     app = Flask(__name__, template_folder='templates', static_folder='static')
 
+    @app.context_processor
+    def utility_processor():
+        def cbc_level_descriptor(level):
+            descriptors = {
+                1: "Below Expectations",
+                2: "Approaching Expectations",
+                3: "Meeting Expectations",
+                4: "Exceeding Expectations"
+            }
+            return descriptors.get(level, "N/A")
+        return dict(cbc_level_descriptor=cbc_level_descriptor)
+
     # App configuration
     app.config.from_mapping(
         SQLALCHEMY_DATABASE_URI=os.getenv('DATABASE_URL'),
