@@ -1,0 +1,62 @@
+name: DocAider Documentation Bot
+
+on:
+  push:
+    branches: [ "main", "develop" ]   # Added develop branch
+    paths: 
+      - 'src/**'                      # Trigger only when source code changes
+      - 'lib/**'
+      - 'package.json'                # Trigger when dependencies change
+  pull_request:
+    branches: [ "main", "develop" ]   # Runs on PRs for both branches
+
+jobs:
+  update-docs:
+    runs-on: ubuntu-latest
+    # Only run if commit message doesn't contain [skip-docs]
+    if: "!contains(github.event.head_commit.message, '[skip-docs]')"
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4  # Updated to v4
+      with:
+        fetch-depth: 0  # Fetch all history for better context
+
+    - name: Set up Node.js (if needed for context)
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies (if needed for context)
+      run: npm install  # Only if your docs need code context
+      if: contains(github.event.repository.name, 'sms') # Conditional based on repo name
+
+    - name: Run DocAider
+      uses: microsoft/docaider-action@v1
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        model: gpt-4o-mini   # Good balance of cost and capability
+        files: |
+          README.md
+          INSTALL.md
+          USAGE.md
+          CHANGELOG.md
+          API_REFERENCE.md   # Added API reference
+          TROUBLESHOOTING.md # Added troubleshooting guide
+          docs/**/*.md
+        instructions: |
+          You are documenting an SMS application.
+          - Always keep setup instructions clear for beginners
+          - Add usage examples with actual SMS code snippets if missing
+          - Summarize major changes in CHANGELOG with dates and version numbers
+          - Include information about SMS providers (Twilio, Vonage, etc.) if relevant
+          - Document rate limits and delivery best practices
+          - Add troubleshooting steps for common SMS delivery issues
+          - Keep API endpoints and parameters well-documented
+          - Include privacy and compliance considerations (GDPR, TCPA)
+          - Add cost optimization tips for SMS sending
+        # Additional parameters you might consider:
+        # doc-types: "readme api troubleshooting" 
+        # auto-approve: false  # Set to true for automatic merging
+        # max-changes: 20      # Limit number of changes per run
