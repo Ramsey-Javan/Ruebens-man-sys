@@ -10,6 +10,9 @@
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
     {% block head %}{% endblock %}
 </head>
+<a href="{{ url_for('public_bp.public_home') }}" class="floating-home-btn">
+    <i class="fas fa-home"></i> 
+</a>
 <body>
     <!-- Floating 3D Shapes Background -->
     <div class="floating-shapes">
@@ -17,6 +20,7 @@
         <div class="shape shape-2"></div>
         <div class="shape shape-3"></div>
     </div>
+    
 
     {% include 'navbar.html' %}
 

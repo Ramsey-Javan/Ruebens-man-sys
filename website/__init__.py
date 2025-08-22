@@ -2,12 +2,12 @@ import os
 from flask import Flask, render_template
 from flask_login import LoginManager
 from flask_migrate import Migrate
-from flask_wtf import CSRFProtect
 from flask_wtf.csrf import generate_csrf
 from dotenv import load_dotenv
 
+
 # Local imports
-from website.extensions import db, login_manager, csrf
+from website.extensions import db, login_manager, RoleBasedCSRFProtect
 from website.models import User
 from website.route import main_bp, route_bp, public_bp
 from website.services import auto_enroll_subjects
@@ -19,11 +19,11 @@ from website.populate_classrooms import populate_classrooms
 load_dotenv()
 
 # Initialize extensions (defined once)
-csrf = CSRFProtect()
+csrf = RoleBasedCSRFProtect()
 login_manager = LoginManager()
 login_manager.login_view = 'route_bp.login'
 
-
+ 
 # Define user loader
 @login_manager.user_loader
 def load_user(user_id):
@@ -52,6 +52,7 @@ def create_app():
         SQLALCHEMY_ENGINE_OPTIONS={'pool_pre_ping': True},
         SECRET_KEY=os.getenv('SECRET_KEY'),
         WTF_CSRF_ENABLED=True,
+        WTF_CSRF_TIME_LIMIT=10800
     )
 
     print(f"[INIT] Loaded DATABASE_URL: {app.config['SQLALCHEMY_DATABASE_URI']}")
